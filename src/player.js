@@ -1,7 +1,7 @@
 import $ from 'webpack-zepto'
-import Card from './card.js';
+import Card from './card.js'
 
-var UNKNOWN = -1;
+const UNKNOWN = -1;
 
 export default {
 	props: ["stage"],

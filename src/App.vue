@@ -1,40 +1,47 @@
 <template>
 	<div id="app" class="disable-select" onselectstart="return false">
-		<rooms :rooms="rooms" v-show="roomId==-1"></rooms>
+		<room :rooms="rooms" v-show="roomId==-1"></room>
 		<cover :stage="stage" :cards="coverCards"></cover>
 		<prev :stage="stage" ref="prev" v-show="roomId!=-1"></prev>
 		<next :stage="stage" ref="next" v-show="roomId!=-1"></next>
 		<actor :stage="stage" ref="actor" v-show="roomId!=-1"></actor>
+		<div id="notify-message">
+			<div class="alert alert-success" v-show="notifyMessage.length">
+				<strong>{{notifyMessage}}</strong>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script>
-	import rooms from './Rooms.vue';
-	import cover from './Cover.vue';
-	import prev from './Prev.vue';
-	import next from './Next.vue';
-	import actor from './Actor.vue';
-	import Card from './card.js';
+	import Room from './Room.vue'
+	import Cover from './Cover.vue'
+	import Prev from './Prev.vue'
+	import Next from './Next.vue'
+	import Actor from './Actor.vue'
+	import Card from './card.js'
 	import $ from 'webpack-zepto'
 
-	var DEBUG = 0;
-	var UNKNOWN = -1;
+	const DEBUG = 1;
+	const UNKNOWN = -1;
 
 	export default {
 		name: 'app',
 		data: function () {
 			return {
-				stage: 0, /* 0:waiting, 1:calling, 2:playing */
+				stage: 0, /* 0:waiting, 1:calling, 2:playing, 3: over */
 				lastPlayerId: UNKNOWN,
 				lastPlayerShot: [],
 				roomId: UNKNOWN,
 				coverCards: [],
 				rooms: [],
-				ws: null
+				ws: null,
+				notifyMessage: "",
+				notifyTimer: null
 			}
 		},
 		components: {
-			rooms, cover, prev, next, actor
+			Room, Cover, Prev, Next, Actor
 		},
 		methods: {
 			setLastPlayerId: function (playerId) {
@@ -56,8 +63,16 @@
 				}
 			},
 			send: function (data) {
-				DEBUG && console.log("sent: " + JSON.stringify(data));
+				DEBUG && console.log("[APP]sent: " + JSON.stringify(data));
 				this.ws.send(JSON.stringify(data));
+			},
+			notify: function (content, time) {
+				clearTimeout(this.notifyTimer);
+				this.notifyTimer = setTimeout(function (){
+					$("#notify-message").hide();
+				}, time || 2000);
+				this.notifyMessage = content;
+				$("#notify-message").show();
 			}
 		},
 		created: function () {
@@ -101,11 +116,11 @@
 						this.coverCards = m.data.coverCards;
 						break;
 					case "gameOver":
-						alert("Landlord " + (m.data.masterWin ? "won" : "failed"));
-						app.setStage(3);
+						this.notify("Landlord " + (m.data.masterWin ? "won !" : "failed !"), 5000);
+						this.setStage(3);
 						actor.hasPrepared = false;
 						for (var id in m.data.cards) {
-							$refs[app.getRefById(id)].cards = m.data.cards[id];
+							$refs[this.getRefById(id)].cards = m.data.cards[id];
 						}
 						break;
 				}
@@ -116,32 +131,31 @@
 		mounted: function () {
 			var app = this;
 			try {
-				var ws = new WebSocket(WSADDR || "ws://localhost:34567");
+				var ws = new WebSocket("ws://172.17.15.167:34567");
 				ws.onopen = function () {
 					app.send({action: "listRoom"});
 				};
 				ws.onmessage = function (event) {
-					DEBUG && console.log("received: " + event.data);
+					DEBUG && console.log("[APP]received: " + event.data);
 					try {
 						var data = JSON.parse(event.data);
 						app.$emit("message", data);
 					} catch (e) {
-						alert(event.data);
+						app.notify(event.data, 10000);
 						console.error(e);
 					}
 				};
 				ws.onclose = function () {
+					app.roomId = UNKNOWN;
+					app.setStage(0);
 				};
 				ws.onerror = function () {
+					app.roomId = UNKNOWN;
 				};
 				app.ws = ws;
 			} catch (e) {
 			}
 
-			// silly blink
-			setInterval(function () {
-				$(".glyphicon-time").toggle();
-			}, 500);
 		}
 	}
 </script>
@@ -159,5 +173,31 @@
 
 	.btn {
 		outline:none !important;
+	}
+
+	.player {
+		z-index: 100000000;
+		background-color: rgba(255, 255, 255, .8);
+		padding: 10px 0;
+	}
+
+	input.shot-cards,
+	input.shot-cards:focus,
+	input.shot-cards:hover,
+	input.shot-cards:active {
+		background-color: #d9ffde !important;
+	}
+
+	#notify-message {
+		position: fixed;
+		width: 100%;
+		top: 36%;
+		z-index: 2000000000;
+	}
+	#notify-message .alert{
+		width: 500px;
+		margin: 0 auto;
+		padding: 30px;
+		opacity: .85;
 	}
 </style>

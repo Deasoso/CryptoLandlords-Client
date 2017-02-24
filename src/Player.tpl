@@ -1,4 +1,4 @@
-<div>
+<div class="player">
 	<div v-if="id == -1">
 		<span>{{displayName}}</span>
 	</div>
@@ -6,7 +6,7 @@
 		<span>{{displayName}} <span class="glyphicon glyphicon-user text-danger" title="The Landlord" v-if="isMaster"></span></span>
 		<div v-if="stage == 0" class="m10">
 			<span class="label label-success" v-if="hasPrepared">Prepared</span>
-			<span class="label label-default" v-else>Not Ready</span>
+			<span class="label label-warning" v-else>Not Ready</span>
 		</div>
 		<div v-else-if="stage == 1">
 			<div v-if="speaking">
@@ -19,20 +19,18 @@
 		<div v-else-if="stage > 1">
 			<div class="m10">
 					<span class="btn-group" v-if="stage == 3">
-						<input type="button" v-for="c in parsedCards" :value="c.text" class="btn btn-default">
+						<input type="button" v-for="c in parsedCards" :value="c.text" class="btn btn-default btn-lg">
 					</span>
 					<span v-else>
-						<div class="btn btn-default">
-							<span v-if="cardCount >= 2">
-								<span class="badge">{{cardCount}}</span> cards
-							</span>
-							<span v-else-if="cardCount == 1">
-								<span class="badge">{{cardCount}}</span> card
-							</span>
-							<span v-else-if="cardCount == 0">
-								Winner!
-							</span>
-						</div>
+						<span v-if="cardCount >= 2">
+							<span class="badge">{{cardCount}}</span> cards
+						</span>
+						<span v-else-if="cardCount == 1">
+							<span class="badge">{{cardCount}}</span> card
+						</span>
+						<span v-else-if="cardCount == 0">
+							<div class="btn btn-success">Winner!</div>
+						</span>
 					</span>
 			</div>
 			<div v-if="speaking && stage == 2" class="m10">
@@ -40,9 +38,9 @@
 			</div>
 			<div v-else-if="shotCount" class="m10">
 				<span class="btn-group" v-if="parsedLastShot.length > 0">
-					<input type="button" v-for="c in parsedLastShot" :value="c.text" class="btn btn-default" disabled>
+					<input type="button" v-for="c in parsedLastShot" :value="c.text" class="btn btn-default shot-cards">
 				</span>
-				<span class="label label-default" v-else>Pass</span>
+				<span class="label label-success" v-else>Pass</span>
 			</div>
 		</div>
 	</div>

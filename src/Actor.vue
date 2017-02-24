@@ -1,5 +1,5 @@
 <template>
-	<div class="text-center actor">
+	<div class="text-center player actor">
 		<div v-if="stage == 0 || stage == 3" class="m10">
 			<span class="label label-success" v-if="hasPrepared">waiting for other players</span>
 			<input type="button" @click="prepare" value="I'm Ready!" class="btn btn-primary" v-else>
@@ -21,26 +21,30 @@
 			</div>
 			<div v-else-if="shotCount" class="m10">
 				<span class="btn-group" v-if="lastShot.length">
-					<input type="button" v-for="c in parsedLastShot" :value="c.text" class="btn btn-default" disabled>
+					<input type="button" v-for="c in parsedLastShot" :value="c.text" class="btn btn-default shot-cards">
 				</span>
 				<span class="label label-default" v-else>Pass</span>
 			</div>
 		</div>
-		<div v-if="cards.length" class="btn-group m10">
-			<input type="button" v-for="c in parsedCards" :value="c.text" :data-key="c.key" :key="c.key" @click="pick"
-						 class="btn btn-default">
+		<div v-show="cards.length" class="btn-group m10 actor-cards">
+			<input type="button" v-for="c in parsedCards" class="btn btn-default btn-lg actor-card"
+						 :value="c.text" :data-key="c.key" :key="c.key"
+						 @click="pick" @mouseover="swipePick">
 		</div>
-		<div>{{displayName}} <span class="glyphicon glyphicon-user text-danger" title="The Landlord"
-															 v-if="isMaster && stage == 2"></span></div>
+		<div>
+			<span>{{displayName}}</span>
+			<span class="glyphicon glyphicon-user text-danger" title="The Landlord" v-if="isMaster && stage == 2"></span>
+		</div>
 	</div>
 </template>
 
 <script>
-	import Player from './player.js';
-	import $ from 'webpack-zepto';
-	import Card from './card.js';
+	import Player from './player.js'
+	import $ from 'webpack-zepto'
+	import Card from './card.js'
 
-	var app;
+	var app, actor;
+	var swipePicking = false;
 
 	export default {
 		extends: Player,
@@ -66,14 +70,14 @@
 				if (cards.length) {
 					var cardInfo = Card.detect(cards);
 					if (cardInfo === false) {
-						alert("Invalid cards.");
+						app.notify("Invalid cards.");
 						return;
 					}
 
 					if (app.lastPlayerShot.length && app.lastPlayerId != this.id) {
 						var othersShotInfo = Card.detect(app.lastPlayerShot);
 						if (! Card.canBeat(cardInfo, othersShotInfo)) {
-							alert("Try again.");
+							app.notify("Invalid cards.");
 							return;
 						}
 					}
@@ -82,16 +86,46 @@
 				}
 			},
 			pass: function () {
-				$(".picked").toggleClass("btn-warning picked");
+				$(".picked").toggleClass("picked");
 				app.send({action: "shoot", data: {cards: []}});
 			},
 			pick: function (e) {
-				$(e.target).toggleClass("btn-warning picked");
+				if (! swipePicking) {
+					$(e.target).toggleClass("picked");
+				}
+			},
+			swipePick: function (e) {
+				if (swipePicking) {
+					$(e.target).toggleClass("picked");
+				}
 			}
 		},
 
 		mounted: function () {
 			app = this.$parent;
+			actor = this;
+
+			$(document).mouseup(function(){
+				window.setTimeout(function() {
+					swipePicking = false;
+				}, 10);
+			});
+			$(".actor-cards").mousedown(function(e){
+				swipePicking = true;
+				if ($(e.target).is(".actor-card")) {
+					$(e.target).toggleClass("picked");
+				}
+				e.preventDefault();
+				e.stopPropagation();
+			});
+
+			$(document).on("contextmenu", function(e){
+				if(app.stage == 2 && actor.speaking) {
+					actor.shoot();
+				}
+				e.stopPropagation();
+				e.preventDefault();
+			});
 		}
 	}
 </script>
@@ -99,7 +133,19 @@
 <style>
 	.actor {
 		position: fixed;
-		bottom: 20px;
+		bottom: 0;
 		width: 100%;
+	}
+
+	.picked {
+		position: relative;
+		top: -5px;
+		background: #d9ffde;
+	}
+
+	input.picked:focus,
+	input.picked:hover,
+	input.picked:active {
+		background-color: #d9ffde !important;
 	}
 </style>

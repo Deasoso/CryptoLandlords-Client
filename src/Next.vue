@@ -1,10 +1,11 @@
-<template src="./player.html"></template>
+<template src="./player.tpl"></template>
 
 <script>
 	import $ from 'webpack-zepto'
-	import Player from './player.js';
+	import Player from './player.js'
 
 	export default {
+		name: "next",
 		extends: Player,
 		mounted: function () {
 			$(this.$el).addClass("next-player");
@@ -15,7 +16,9 @@
 <style>
 	.next-player {
 		position: fixed;
-		right: 20px;
+		right: 0;
 		text-align: right;
+		top: 60px;
+		padding: 10px;
 	}
 </style>
