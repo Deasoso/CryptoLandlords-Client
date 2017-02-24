@@ -33,7 +33,7 @@
 		</div>
 		<div>
 			<span>{{displayName}}</span>
-			<span class="glyphicon glyphicon-user text-danger" title="The Landlord" v-if="isMaster && stage == 2"></span>
+			<span class="glyphicon glyphicon-user text-danger" title="The Landlord" v-if="isMaster && stage > 1"></span>
 		</div>
 	</div>
 </template>

@@ -23,17 +23,14 @@
 	import Card from './card.js'
 	import $ from 'webpack-zepto'
 
-	const DEBUG = process.env.NODE_ENV != "production";
-	const UNKNOWN = -1;
-
 	export default {
 		name: 'app',
 		data: function () {
 			return {
 				stage: 0, /* 0:waiting, 1:calling, 2:playing, 3: over */
-				lastPlayerId: UNKNOWN,
+				lastPlayerId: DDZ_UNKNOWN,
 				lastPlayerShot: [],
-				roomId: UNKNOWN,
+				roomId: DDZ_UNKNOWN,
 				coverCards: [],
 				rooms: [],
 				ws: null,
@@ -46,11 +43,11 @@
 		},
 		methods: {
 			setLastPlayerId: function (playerId) {
-				DEBUG && console.log("[root]set lastPlayerId=" + playerId);
+				DDZ_DEBUG && console.log("[root]set lastPlayerId=" + playerId);
 				this.lastPlayerId = playerId;
 			},
 			setStage: function (stage) {
-				DEBUG && console.log("[root]set stage=" + stage);
+				DDZ_DEBUG && console.log("[root]set stage=" + stage);
 				this.stage = stage;
 			},
 			getRefById: function (id) {
@@ -64,7 +61,7 @@
 				}
 			},
 			send: function (data) {
-				DEBUG && console.log("[APP]sent: " + JSON.stringify(data));
+				DDZ_DEBUG && console.log("[APP]sent: " + JSON.stringify(data));
 				this.ws.send(JSON.stringify(data));
 			},
 			notify: function (content, time) {
@@ -85,7 +82,7 @@
 						this.rooms = m.rooms;
 						break;
 					case "join":
-						if (actor.id === UNKNOWN) {
+						if (actor.id === DDZ_UNKNOWN) {
 							this.roomId = m.roomId;
 							actor.join(m.playerId);
 							this.refreshPlayers(m.data.players);
@@ -98,7 +95,7 @@
 						break;
 					case "leave":
 						if (m.playerId === actor.id) {
-							this.roomId = UNKNOWN;
+							this.roomId = DDZ_UNKNOWN;
 							$refs["actor"].leave();
 						} else {
 							$refs[this.getRefById(m.playerId)].leave();
@@ -132,12 +129,12 @@
 		mounted: function () {
 			var app = this;
 			try {
-				var ws = new WebSocket("ws://172.17.15.167:34567");
+				var ws = new WebSocket(DDZ_WS_ADDRESS);
 				ws.onopen = function () {
 					app.send({action: "listRoom"});
 				};
 				ws.onmessage = function (event) {
-					DEBUG && console.log("[APP]received: " + event.data);
+					DDZ_DEBUG && console.log("[APP]received: " + event.data);
 					try {
 						var data = JSON.parse(event.data);
 						app.$emit("message", data);
@@ -147,11 +144,11 @@
 					}
 				};
 				ws.onclose = function () {
-					app.roomId = UNKNOWN;
+					app.roomId = DDZ_UNKNOWN;
 					app.setStage(0);
 				};
 				ws.onerror = function () {
-					app.roomId = UNKNOWN;
+					app.roomId = DDZ_UNKNOWN;
 				};
 				app.ws = ws;
 			} catch (e) {

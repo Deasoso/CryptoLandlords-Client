@@ -19,8 +19,8 @@
 	}
 
 	// simple tests
-	!function (testing) {
-		if (! testing) return;
+	!function () {
+		if (! DDZ_DEBUG) return;
 		console.log("[Card] testing detect start");
 		var samples = [
 			[101],
@@ -45,7 +45,7 @@
 			console.log(samples[i].join(",") + " => " + (info !== false ? info.type : "false"));
 		}
 		console.log("[Card] testing detect end");
-	}(process.env.NODE_ENV != "production");
+	}();
 </script>
 
 <style>

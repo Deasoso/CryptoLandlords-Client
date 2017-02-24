@@ -1,13 +1,11 @@
 import $ from 'webpack-zepto'
 import Card from './card.js'
 
-const UNKNOWN = -1;
-
 export default {
 	props: ["stage"],
 	data: function () {
 		return {
-			id: UNKNOWN,
+			id: DDZ_UNKNOWN,
 			name: "",
 			cards: [],
 			cardCount: 0,
@@ -21,7 +19,7 @@ export default {
 	},
 	computed: {
 		displayName: function () {
-			return this.id === UNKNOWN ? "Nobody"
+			return this.id === DDZ_UNKNOWN ? "Nobody"
 				: (this.name.length ? this.name.length : "Player #" + this.id);
 		},
 		parsedCards: function () {
@@ -72,7 +70,7 @@ export default {
 			this.shotCount = 0;
 		},
 		leave: function () {
-			this.join(UNKNOWN, false);
+			this.join(DDZ_UNKNOWN, false);
 		},
 		setMaster: function (message) {
 			if (message.action === "play") {
