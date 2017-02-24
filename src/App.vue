@@ -10,6 +10,7 @@
 				<strong>{{notifyMessage}}</strong>
 			</div>
 		</div>
+		<div class="github text-center"><a href="https://github.com/joy2fun/ddz-game.git" target="_blank">@Github</a></div>
 	</div>
 </template>
 
@@ -199,5 +200,12 @@
 		margin: 0 auto;
 		padding: 30px;
 		opacity: .85;
+	}
+
+	.github{
+		position: fixed;
+		z-index: 2000000000;
+		bottom: 8px;
+		width: 100%;
 	}
 </style>

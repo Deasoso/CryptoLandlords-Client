@@ -133,7 +133,7 @@
 <style>
 	.actor {
 		position: fixed;
-		bottom: 0;
+		bottom: 20px;
 		width: 100%;
 	}
 
