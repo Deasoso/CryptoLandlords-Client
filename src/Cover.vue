@@ -45,7 +45,7 @@
 			console.log(samples[i].join(",") + " => " + (info !== false ? info.type : "false"));
 		}
 		console.log("[Card] testing detect end");
-	}(true);
+	}(process.env.NODE_ENV != "production");
 </script>
 
 <style>

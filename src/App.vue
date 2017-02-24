@@ -22,7 +22,7 @@
 	import Card from './card.js'
 	import $ from 'webpack-zepto'
 
-	const DEBUG = 1;
+	const DEBUG = process.env.NODE_ENV != "production";
 	const UNKNOWN = -1;
 
 	export default {
