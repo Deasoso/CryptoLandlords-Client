@@ -28,8 +28,7 @@
 		</div>
 		<div v-show="cards.length" class="btn-group m10 actor-cards">
 			<input type="button" v-for="c in parsedCards" class="btn btn-default btn-lg actor-card"
-						 :value="c.text" :data-key="c.key" :key="c.key"
-						 @click="pick" @mouseover="swipePick">
+						 :value="c.text" :data-key="c.key" :key="c.key" @mouseover="swipePick">
 		</div>
 		<div>
 			<span>{{displayName}}</span>
@@ -89,11 +88,6 @@
 				$(".picked").toggleClass("picked");
 				app.send({action: "shoot", data: {cards: []}});
 			},
-			pick: function (e) {
-				if (! swipePicking) {
-					$(e.target).toggleClass("picked");
-				}
-			},
 			swipePick: function (e) {
 				if (swipePicking) {
 					$(e.target).toggleClass("picked");
@@ -106,9 +100,7 @@
 			actor = this;
 
 			$(document).mouseup(function(){
-				window.setTimeout(function() {
-					swipePicking = false;
-				}, 10);
+				swipePicking = false;
 			});
 			$(".actor-cards").mousedown(function(e){
 				swipePicking = true;
