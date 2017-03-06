@@ -1,4 +1,4 @@
-<template src="./player.tpl"></template>
+<template src="./Player.tpl"></template>
 
 <script>
 	import $ from 'webpack-zepto'
