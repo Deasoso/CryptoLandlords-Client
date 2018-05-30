@@ -21,6 +21,7 @@
 	import Next from './Next.vue'
 	import Actor from './Actor.vue'
 	import Card from './card.js'
+	import * as web3 from '@/web3src/web3.js'
 	import $ from 'webpack-zepto'
 
 	export default {
@@ -64,6 +65,11 @@
 				DDZ_DEBUG && console.log("[APP]sent: " + JSON.stringify(data));
 				this.ws.send(JSON.stringify(data));
 			},
+			setme:function (me) {
+				this.$refs["actor"].setaddr(me.address);
+				this.send({action: "setaddr",
+				   	data:{address: me.address}});
+			},
 			notify: function (content, time) {
 				clearTimeout(this.notifyTimer);
 				this.notifyTimer = setTimeout(function (){
@@ -89,6 +95,8 @@
 						} else {
 							$refs[this.getRefById(m.playerId)].join(m.playerId);
 						}
+						for (var child in $refs)
+							$refs[child].reset();
 						break;
 					case "ready":
 						this.refreshPlayers(m.data.players);
@@ -96,11 +104,17 @@
 					case "leave":
 						if (m.playerId === actor.id) {
 							this.roomId = DDZ_UNKNOWN;
-							$refs["actor"].leave();
+							actor.id = DDZ_UNKNOWN; 
+							this.refreshPlayers(m.data.players);
 						} else {
 							$refs[this.getRefById(m.playerId)].leave();
+							this.refreshPlayers(m.data.players);
 						}
-						this.setStage(0);
+						for (var child in $refs)
+							$refs[child].reset();
+						break;
+					case "goout":
+						// this.send({action: "leave"});
 						break;
 					case "start":
 						this.setStage(1);
@@ -114,12 +128,58 @@
 						this.coverCards = m.data.coverCards;
 						break;
 					case "gameOver":
-						this.notify("Landlord " + (m.data.masterWin ? "won !" : "failed !"), 5000);
-						this.setStage(3);
-						actor.hasPrepared = false;
-						for (var id in m.data.cards) {
-							$refs[this.getRefById(id)].cards = m.data.cards[id];
-						}
+						var farmerwin = !m.data.masterWin;
+						DDZ_DEBUG && console.log(m.data.roundid+","+farmerwin+","+m.data.masteraddr)
+						web3.endround(m.data.roundid,m.data.masteraddr,farmerwin).then(() => {
+							this.notify("Landlord " + (m.data.masterWin ? "won !" : "failed !"), 5000);
+							this.setStage(3);
+							actor.hasPrepared = false;
+							for (var id in m.data.cards) {
+								$refs[this.getRefById(id)].cards = m.data.cards[id];
+							}
+						});
+						break;
+					case "createnewround":
+						var self = this;
+						var round = {};
+						DDZ_DEBUG && console.log(round);
+						round.player1 = m.player1;
+						round.player2 = m.player2;
+						round.player3 = m.player3;
+						round.coin = m.coin;
+						web3.newroundevent.watch(function(error, result){
+    						if (!error){
+								 DDZ_DEBUG && console.log(JSON.stringify(result.args) + "," + 
+								 (round.player1 == result.args.player1) + "," + 
+								 (round.player2 == result.args.player2) + "," + 
+								 (round.player3 == result.args.player3) + "," + 
+								 (round.coin == result.args.coins) + "," + 
+								 result.args.player1 + "," + 
+								 round.player1 + "," + 
+								 round.player2 + "," +
+								 round.player3);
+								if (round.player1 == result.args.player1 && 
+									round.player2 == result.args.player2 &&
+									round.player3 == result.args.player3 &&
+									round.coin == result.args.coins){
+									self.send({action: "creatednewround",
+									   data:{'roundid':result.args.roundid}});
+									web3.newroundevent.stopWatching();
+								}
+							}
+						})
+						web3.requestround(m.player1,m.player2,m.player3,m.coin);
+						break;
+					case "waitingnewround":
+						for (var child in $refs)
+								$refs[child].reset();
+						break;
+					case "pay":
+						web3.startround(m.roundid).then(() => {
+							for (var child in $refs)
+								$refs[child].reset();
+							this.send({action: "payed"});
+						})
 						break;
 				}
 				for (var child in $refs)
@@ -140,10 +200,12 @@
 						app.$emit("message", data);
 					} catch (e) {
 						app.notify(event.data, 10000);
-						console.error(e);
+						DDZ_DEBUG && console.error(e);
 					}
 				};
-				ws.onclose = function () {
+				ws.onclose = function (e) {
+					console.log(e);
+					console.log("fxxkingclose");
 					app.roomId = DDZ_UNKNOWN;
 					app.setStage(0);
 				};

@@ -2,7 +2,10 @@
 	<div class="text-center player actor">
 		<div v-if="stage == 0 || stage == 3" class="m10">
 			<span class="label label-success" v-if="hasPrepared">waiting for other players</span>
-			<input type="button" @click="prepare" value="I'm Ready!" class="btn btn-primary" v-else>
+			<span class="btn-group" v-else>
+				<input type="button" @click="prepare" value="I'm Ready!" class="btn btn-primary">
+				<input type="button" @click="leave" value="leave" class="btn btn-warning">
+			</span>
 		</div>
 		<div v-if="stage == 1">
 			<div v-if="speaking">
@@ -55,6 +58,9 @@
 		methods: {
 			call: function (yes) {
 				app.send({action: "call", data: {confirmed: !!yes}});
+			},
+			leave: function(){
+				app.send({action: "leave"});
 			},
 			prepare: function () {
 				app.setStage(0);

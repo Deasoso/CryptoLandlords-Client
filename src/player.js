@@ -7,13 +7,17 @@ export default {
 		return {
 			id: DDZ_UNKNOWN,
 			name: "",
+			address: "",
 			cards: [],
 			cardCount: 0,
 			lastShot: [],
 			shotCount: 0,
+			coin: 0,
 			speaking: false,
 			isMaster: false,
 			hasPrepared: false,
+			isCreator: false,
+			payed: false,
 			callState: 0 /* +/-/0 */
 		}
 	},
@@ -55,6 +59,9 @@ export default {
 						break;
 				}
 			}
+		},
+		setaddr: function (addr){
+			this.address = addr;
 		},
 		join: function (id, prepared) {
 			this.id = id >> 0;

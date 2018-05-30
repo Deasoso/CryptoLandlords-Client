@@ -21,7 +21,7 @@
 	// simple tests
 	!function () {
 		if (! DDZ_DEBUG) return;
-		console.log("[Card] testing detect start");
+		DDZ_DEBUG && console.log("[Card] testing detect start");
 		var samples = [
 			[101],
 			[201, 202],
@@ -42,9 +42,9 @@
 
 		for (var i=0; i<samples.length; i++) {
 			var info = Card.detect(samples[i]);
-			console.log(samples[i].join(",") + " => " + (info !== false ? info.type : "false"));
+			DDZ_DEBUG && console.log(samples[i].join(",") + " => " + (info !== false ? info.type : "false"));
 		}
-		console.log("[Card] testing detect end");
+		DDZ_DEBUG && console.log("[Card] testing detect end");
 	}();
 </script>
 

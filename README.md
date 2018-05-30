@@ -2,7 +2,7 @@
 
 ## WebSocket 连接地址
 
-修改 `webpack.config.js` 配置里的常量 `DDZ_WS_ADDRESS` 为 [服务端](https://github.com/joy2fun/ddz-server) 的地址。
+修改 `webpack.config.js` 配置里的常量 `DDZ_WS_ADDRESS` 为 [服务端](https://github.com/Deasoso/CryptoLandlords-server) 的地址。
 
 ## Build
 
