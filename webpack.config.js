@@ -22,10 +22,10 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel-loader',
-        // options: {
-        //   presets: ['es2015']
-        // },
-        exclude: /node_modules/
+        options: {
+          presets: ['es2015']
+        },
+        exclude: [/node_modules/],
         // include: [resolve('src'),resolve('test'),resolve('/node_modules/iview/src'),resolve('/node_modules/iview/packages')],
       }
     ]
@@ -92,7 +92,7 @@ if (process.env.NODE_ENV === 'production') {
       
       beautify: false,
       // debug true
-      sourceMap: true,
+      // sourceMap: true,
 
       },
       
