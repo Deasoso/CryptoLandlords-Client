@@ -47,7 +47,7 @@ module.exports = {
   devtool: '#eval-source-map',
   plugins: [
     new webpack.DefinePlugin({
-      'DDZ_WS_ADDRESS': JSON.stringify("ws://localhost:34567"),
+      'DDZ_WS_ADDRESS': JSON.stringify("ws://47.106.69.165:34567"),
       'DDZ_UNKNOWN' : -1,
       'DDZ_DEBUG': process.env.NODE_ENV !== 'production'
     })

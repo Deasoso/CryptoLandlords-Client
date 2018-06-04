@@ -10,7 +10,7 @@
 				<strong>{{notifyMessage}}</strong>
 			</div>
 		</div>
-		<div class="github text-center"><a href="https://github.com/joy2fun/ddz-game.git" target="_blank">@Github</a></div>
+		<div class="github text-center"><a href="https://github.com/Deasoso/CryptoLandlords-Client" target="_blank">@Github</a></div>
 	</div>
 </template>
 
