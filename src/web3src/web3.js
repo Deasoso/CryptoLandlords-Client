@@ -54,7 +54,7 @@ import Promise from 'bluebird';
 const web3Provider = window.web3 ? window.web3.currentProvider : null;
 const web3 = web3Provider
   ? new Web3(web3Provider)
-  : new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));//config.defaultNetwork.rpc));
+  : new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io/DQtbJQhdBnp43bneIiqp"));//config.defaultNetwork.rpc));
 
 web3.eth.defaultAccount = web3.eth.accounts[0];
 DDZ_DEBUG && console.log("hello");

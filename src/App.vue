@@ -57,8 +57,12 @@
 						: (id === (this.$refs.actor.id + 1) % 3 ? "next" : "prev");
 			},
 			refreshPlayers: function (players) {
-				for (var id in players) {
-					this.$refs[this.getRefById(id)].join(id, players[id].ready);
+				for (var id in [0,1,2]) {
+					if (id in players){
+						this.$refs[this.getRefById(id)].join(id, players[id].ready);
+					}else{
+						this.$refs[this.getRefById(id)].leave();
+					}
 				}
 			},
 			send: function (data) {
@@ -94,9 +98,11 @@
 							this.refreshPlayers(m.data.players);
 						} else {
 							$refs[this.getRefById(m.playerId)].join(m.playerId);
+							this.refreshPlayers(m.data.players);
 						}
-						for (var child in $refs)
+						for (var child in $refs){
 							$refs[child].reset();
+						}
 						break;
 					case "ready":
 						this.refreshPlayers(m.data.players);
@@ -104,12 +110,11 @@
 					case "leave":
 						if (m.playerId === actor.id) {
 							this.roomId = DDZ_UNKNOWN;
-							actor.id = DDZ_UNKNOWN; 
-							this.refreshPlayers(m.data.players);
+							actor.leave();//.id = DDZ_UNKNOWN; 
 						} else {
 							$refs[this.getRefById(m.playerId)].leave();
-							this.refreshPlayers(m.data.players);
 						}
+						DDZ_DEBUG && console.log(m.data.players);
 						for (var child in $refs)
 							$refs[child].reset();
 						break;
@@ -147,7 +152,7 @@
 						round.player2 = m.player2;
 						round.player3 = m.player3;
 						round.coin = m.coin;
-						web3.newroundevent.watch(function(error, result){
+						web3.newroundevent.watch(async (error, result) =>{
     						if (!error){
 								 DDZ_DEBUG && console.log(JSON.stringify(result.args) + "," + 
 								 (round.player1 == result.args.player1) + "," + 
@@ -190,6 +195,10 @@
 			var app = this;
 			try {
 				var ws = new WebSocket(DDZ_WS_ADDRESS);
+				window.onbeforeunload = function (e) {
+					app.send({action: "leave"});
+					//e.returnValue = "我在这写点东西...";
+    			}
 				ws.onopen = function () {
 					app.send({action: "listRoom"});
 				};

@@ -4,7 +4,7 @@
 			<span class="label label-success" v-if="hasPrepared">waiting for other players</span>
 			<span class="btn-group" v-else>
 				<input type="button" @click="prepare" value="I'm Ready!" class="btn btn-primary">
-				<input type="button" @click="leave" value="leave" class="btn btn-warning">
+				<input type="button" @click="leaveroom" value="leave" class="btn btn-warning">
 			</span>
 		</div>
 		<div v-if="stage == 1">
@@ -59,7 +59,7 @@
 			call: function (yes) {
 				app.send({action: "call", data: {confirmed: !!yes}});
 			},
-			leave: function(){
+			leaveroom: function(){
 				app.send({action: "leave"});
 			},
 			prepare: function () {

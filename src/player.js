@@ -23,7 +23,7 @@ export default {
 	},
 	computed: {
 		displayName: function () {
-			return this.id === DDZ_UNKNOWN ? "Nobody"
+			return this.id == DDZ_UNKNOWN ? "Nobody"
 				: (this.name.length ? this.name.length : "Player #" + this.id);
 		},
 		parsedCards: function () {
