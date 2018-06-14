@@ -173,7 +173,7 @@ contract DDZ{
   function buy(uint256 _coins) payable onlyPlayers() public returns(address msgsend, uint256 coins){
     require(_coins >= 1);
     require(msg.value >= _coins.mul(rate));
-    this.transfer(_coins.mul(rate));
+    //this.transfer(_coins.mul(rate));
     msg.sender.transfer(msg.value.sub(_coins.mul(rate)));
     gamecoins[msg.sender] = gamecoins[msg.sender].add(_coins);
     allcoins = allcoins.add(_coins);

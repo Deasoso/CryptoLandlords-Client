@@ -21,7 +21,7 @@
 	import Next from './Next.vue'
 	import Actor from './Actor.vue'
 	import Card from './card.js'
-	import * as web3 from '@/web3src/web3.js'
+	import * as web3 from '@/xingyunsrc/xyapi.js'//'@/web3src/web3.js'
 	import $ from 'webpack-zepto'
 
 	export default {
@@ -84,7 +84,7 @@
 			}
 		},
 		created: function () {
-			this.$on("message", function (m) {
+			this.$on("message", async function (m) {
 				var $refs = this.$refs;
 				var actor = $refs["actor"];
 				switch (m.action) {
@@ -152,28 +152,39 @@
 						round.player2 = m.player2;
 						round.player3 = m.player3;
 						round.coin = m.coin;
-						web3.newroundevent.watch(async (error, result) =>{
-    						if (!error){
+						var startround = (result) => {
 								 DDZ_DEBUG && console.log(JSON.stringify(result.args) + "," + 
-								 (round.player1 == result.args.player1) + "," + 
-								 (round.player2 == result.args.player2) + "," + 
-								 (round.player3 == result.args.player3) + "," + 
-								 (round.coin == result.args.coins) + "," + 
-								 result.args.player1 + "," + 
+								 (round.player1 == result.player1) + "," + 
+								 (round.player2 == result.player2) + "," + 
+								 (round.player3 == result.player3) + "," + 
+								 (round.coin == result.coins) + "," + 
+								 result.player1 + "," + 
 								 round.player1 + "," + 
 								 round.player2 + "," +
 								 round.player3);
-								if (round.player1 == result.args.player1 && 
-									round.player2 == result.args.player2 &&
-									round.player3 == result.args.player3 &&
-									round.coin == result.args.coins){
+								if (round.player1 == result.player1 && 
+									round.player2 == result.player2 &&
+									round.player3 == result.player3 &&
+									round.coin == result.coins){
 									self.send({action: "creatednewround",
-									   data:{'roundid':result.args.roundid}});
-									web3.newroundevent.stopWatching();
+									   data:{'roundid':result.roundid}});
+									// web3.newroundevent.stopWatching();
 								}
-							}
-						})
-						web3.requestround(m.player1,m.player2,m.player3,m.coin);
+						}	
+						// web3.newroundevent.watch(waitround);
+						web3.requestround(m.player1,m.player2,m.player3,m.coin).then((roundhash) => {
+							console.log("reqqquresting");
+							console.log(roundhash);
+							var roundhash = roundhash
+							web3.getneb().api.getEventsByHash({hash: roundhash})
+							.then((events) => {
+								console.log(events);
+								startround(JSON.parse(events.events[0].data).Newround);
+							})
+							.catch((e) => {
+								console.log(e);
+							});
+						});
 						break;
 					case "waitingnewround":
 						for (var child in $refs)
@@ -196,8 +207,7 @@
 			try {
 				var ws = new WebSocket(DDZ_WS_ADDRESS);
 				window.onbeforeunload = function (e) {
-					app.send({action: "leave"});
-					//e.returnValue = "我在这写点东西...";
+					// app.send({action: "leave"});
     			}
 				ws.onopen = function () {
 					app.send({action: "listRoom"});

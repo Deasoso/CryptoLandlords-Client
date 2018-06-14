@@ -2,7 +2,7 @@
 	<div class="content">
 			<ul id="myTab" class="nav nav-tabs container">
 				<p class="navbar-text pull-right">{{message}}</p>
-				<li class="disabled"><a href="#">以太斗地主</a></li>
+				<li class="disabled"><a href="#">星云斗地主</a></li>
     			<li 
         			v-for="(item,index) in tabsParam" 
         			:class="{active:item == nowIndex}"
@@ -26,7 +26,7 @@
 		<div class="buy-sell-view" v-else-if="nowIndex==tabsParam[1]">
 			<div class="container">
 				<hr>
-				<div>兑换比例：1 以太币 = 10000 游戏币</div>
+				<div>兑换比例：1 星云币 = 100 游戏币</div>
 				<hr>
 				<!-- <div class="row">
   					<div class="col-lg-6"> -->
@@ -68,7 +68,7 @@
 
 <script>
 	import $ from 'webpack-zepto'
-	import * as web3 from '@/web3src/web3.js'
+	import * as web3 from "@/xingyunsrc/xyapi.js"//'@/web3src/web3.js'
 
 	export default {
 		name: "room",
@@ -97,7 +97,7 @@
 				if (e.message == 'NO_METAMASK'){
 					this.message = "此游戏仅能运行在Chrome或Firefox下，去下载一个？";
 				}else if(e.message == 'METAMASK_LOCKED'){
-					this.message = "没有收到你的钱包地址，安装或解锁一下METAMASK插件？";
+					this.message = "没有收到你的钱包地址，安装或解锁一下星云链钱包插件？";
 				}else if(e.message == 'NONE_JOINED'){
 					this.message = "地址：" + this.address + " 似乎还没加入游戏……去首页加入一下？";
 				}

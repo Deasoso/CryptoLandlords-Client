@@ -1,56 +1,7 @@
 import Web3 from 'web3';
 import ABI from '@/contract/DDZ_abi.json';
-//import Code from '@/contract/DDZ_data.bin';
 import Promise from 'bluebird';
-// // import * as config from '@/config';
 
-// const getWeb3 = new Promise(function(resolve) {
-//     window.addEventListener('load', function() {
-//         var results;
-//         var web3 = window.web3;
-//         if (typeof web3 !== 'undefined') {
-//             // Use Mist/MetaMask's provider.
-//             web3 = new Web3(web3.currentProvider);
-//             results = {
-//                 web3: web3
-//             };
-//             console.log('Injected web3 detected.');
-//             resolve(results);
-//         } else {
-//             alert('请安装MetaMask插件并解锁您的以太坊账户');
-//         }
-//     })
-// });
-// var web3;
-//getWeb3.then(function(results) {
-    //     web3 = results.web3;
-    //     //await deploy();
-    // });
-    // deploy = async() =>
-// {
-//     var _name = "ddz_game" ;
-//     console.log("hello2");
-//     //console.log(web3.eth);
-//     var contractat = '0xf421dc58733c8dde61e5ba17e7dfaed5a81e6eb2';
-//     ddzcontract = web3.eth.contract(ABI).at(contractat);
-//     // ddzcontract.new(
-//     //     _name,
-//     //     {
-//     //         from: web3.eth.accounts[0],
-//     //         data: '@/contract/DDZ_data.bin',
-//     //         gas: '288628',
-//     //         gasPrice: 4
-//     //     }, function (e, contract){
-//     //         console.log(e, contract);
-//     //         if (e !== 'undefined') {
-//     //             if (typeof contract.address !== 'undefined') {
-//     //                 console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
-//     //             } else {
-//     //                 console.log('Contract mined! transactionHash: ' + contract.transactionHash);
-//     //             }
-//     //         }
-//     //     });
-// };
 const web3Provider = window.web3 ? window.web3.currentProvider : null;
 const web3 = web3Provider
   ? new Web3(web3Provider)
