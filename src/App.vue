@@ -172,7 +172,7 @@
 							//仅刷新coin，不用等待回调就可以开下一把
 						});
 						this.refreshPlayers(m.data.players);
-						this.notify("Landlord " + (m.data.masterWin ? "won !" : "failed !"), 5000);
+						this.notify((m.data.masterWin ? "地主胜利 !" : "农民胜利 !"), 5000);
 						this.setStage(3);
 						actor.hasPrepared = false;
 						for (var id in m.data.cards) {

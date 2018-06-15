@@ -25,27 +25,38 @@ export const getneb = () => {
     return neb;
 };
 
-export const joingame = () => new Promise((resolve, reject) => {
+export const joingame = async () => {
     DDZ_DEBUG && console.log("joining game");
-    nebPay.call(ddzcontract, 0, "join", JSON.stringify([]),
-        (err, result) => (err ? reject(err) : resolve(result)));
-});
-
-export const sellcoin = coin => new Promise((resolve, reject) => {
-    getrate().then((rate) => {
-        DDZ_DEBUG && console.log("selling coin " + coin + " " + rate);
-        nebPay.call(ddzcontract, "0", "sell", JSON.stringify([coin]),
-            (err, result) => (err ? reject(err) : resolve(result)));
+    nebPay.call(ddzcontract, 0, "join", JSON.stringify([]),{
+        //callback: NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
+        callback: NebPay.config.testnetUrl
+        //此处可加listener
     });
-});
-
-export const buycoin = coin => new Promise((resolve, reject) => {
-    getrate().then((rate) => {
-        DDZ_DEBUG && console.log("buying coin " + coin + " " + rate);
-        nebPay.call(ddzcontract, coin * rate, "buy", JSON.stringify([coin]),
-            (err, result) => (err ? reject(err) : resolve(result)));
+    var hash = await waitingcallback(serialNumber);
+    return hash;
+};
+export const buycoin = async (coin) => {
+    var rate = await getrate();
+    DDZ_DEBUG && console.log("buying coin " + coin + " " + rate);
+    var serialNumber = nebPay.call(ddzcontract, coin * rate, "buy", JSON.stringify([coin]), {
+        //callback: NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
+        callback: NebPay.config.testnetUrl
+        //此处可加listener
     });
-});
+    var hash = await waitingcallback(serialNumber);
+    return hash;
+};
+export const sellcoin = async (coin) => {
+    var rate = await getrate();
+    DDZ_DEBUG && console.log("selling coin " + coin + " " + rate);
+    var serialNumber = nebPay.call(ddzcontract, "0", "sell", JSON.stringify([coin]), {            //callback: NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
+        callback: NebPay.config.testnetUrl
+        //此处可加listener
+    });
+    var hash = await waitingcallback(serialNumber);
+    return hash;
+};
+
 //console.log("nebpay: received re
 export const requestround = async (player1, player2, player3, coin) => {
     DDZ_DEBUG && console.log("requesting round" + ":" + player1 + ":" + player2 + ":" + player3);
@@ -107,11 +118,11 @@ export const getMe = async () => {
     DDZ_DEBUG && console.log(me.address);
     if (me.address) {
         DDZ_DEBUG && console.log("getting joined..");
-        me.joined = true;//await playerisjoined(msgsender);
+        me.joined = await playerisjoined(msgsender);
         DDZ_DEBUG && console.log(me.joined);
         DDZ_DEBUG && console.log("getting coin..");
         //if (me.joined != "true") throw Error('NONE_JOINED');
-        me.coin = 100;//await getCoin(msgsender);
+        me.coin = await getCoin(msgsender);
         return me;
     }
     throw Error('WALLET_LOCKED');
@@ -144,7 +155,15 @@ export const playerisadmin = async (address) => {
     }));
     // {return await nebPay.simulateCall(ddzcontract, 0, "isjoined", JSON.stringify([address]));
 };
+export const withdraw = async (coins) => {
+    DDZ_DEBUG && console.log("withdrawing:" + coins);
+    nebPay.call(ddzcontract, 0, "withdraw", JSON.stringify([coins]),{
+        callback: NebPay.config.testnetUrl
+    });
+    return;
+};
 const waitingcallback = serialNumber => new Promise((resolve, reject) => {
+    DDZ_DEBUG && console.log("waiting...");
     var intervalQuery;
     function funcIntervalQuery() {
         var options = {
@@ -153,7 +172,7 @@ const waitingcallback = serialNumber => new Promise((resolve, reject) => {
         }
         nebPay.queryPayInfo(serialNumber, options)   //search transaction result from server (result upload to server by app)
             .then(function (resp) {
-                console.log("tx result: " + resp)   //resp is a JSON string
+                DDZ_DEBUG && console.log("tx result: " + resp)   //resp is a JSON string
                 var respObject = JSON.parse(resp)
                 if (respObject.data.status === 1) {
                     clearInterval(intervalQuery);
@@ -161,7 +180,7 @@ const waitingcallback = serialNumber => new Promise((resolve, reject) => {
                 }
             })
             .catch(function (err) {
-                console.log(err);
+                DDZ_DEBUG && console.log(err);
             });
     }
     intervalQuery = setInterval(function () {

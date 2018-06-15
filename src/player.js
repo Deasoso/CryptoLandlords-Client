@@ -22,8 +22,8 @@ export default {
 	},
 	computed: {
 		displayName: function () {
-			return this.id == DDZ_UNKNOWN ? "Nobody"
-				: (this.name.length ? this.name.length : "Player #" + this.id + " Address:" + this.address.slice(-6).toUpperCase() + " Coin:" + this.coin);
+			return this.id == DDZ_UNKNOWN ? "空位"
+				: (this.name.length ? this.name.length : this.id + " 号座位" + " 地址: " + this.address.slice(-6).toUpperCase() + " 游戏币:" + this.coin);
 		},
 		parsedCards: function () {
 			return Card.convert(this.cards).sort(Card.cardSort);

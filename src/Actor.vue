@@ -1,16 +1,16 @@
 <template>
 	<div class="text-center player actor">
 		<div v-if="stage == 0 || stage == 3" class="m10">
-			<span class="label label-success" v-if="hasPrepared">waiting for other players</span>
+			<span class="label label-success" v-if="hasPrepared">等待其它玩家</span>
 			<span class="btn-group" v-else>
-				<input type="button" @click="prepare" value="I'm Ready!" class="btn btn-primary">
-				<input type="button" @click="leaveroom" value="leave" class="btn btn-warning">
+				<input type="button" @click="prepare" value="准备！" class="btn btn-primary">
+				<input type="button" @click="leaveroom" value="离开" class="btn btn-warning">
 			</span>
 		</div>
 		<div v-if="stage == 1">
 			<div v-if="speaking">
-				<input type="button" @click="call(1)" value="Call" class="btn btn-primary">
-				<input type="button" @click="call(0)" value="Pass" class="btn btn-default">
+				<input type="button" @click="call(1)" value="叫地主" class="btn btn-primary">
+				<input type="button" @click="call(0)" value="不叫" class="btn btn-default">
 			</div>
 			<div v-else>
 				<span class="label label-success" v-if="callState == 0">waiting for other players</span>
@@ -19,8 +19,8 @@
 		</div>
 		<div v-if="stage > 1">
 			<div v-if="speaking && stage == 2" class="m10">
-				<input type="button" @click="shoot" value="Shoot" class="btn btn-primary">
-				<input type="button" @click="pass" value="Pass" class="btn btn-default" v-show="canPass">
+				<input type="button" @click="shoot" value="出牌" class="btn btn-primary">
+				<input type="button" @click="pass" value="不出" class="btn btn-default" v-show="canPass">
 			</div>
 			<div v-else-if="shotCount" class="m10">
 				<span class="btn-group" v-if="lastShot.length">

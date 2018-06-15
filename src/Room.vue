@@ -16,7 +16,7 @@
 			<div class="container">
 				<a @click="enter" :data-id="room.id" v-for="room in rooms">
 					<span class="btn-group col-xs-6 col-sm-4 col-md-3 top">
-						<span type="button" class="disabled btn btn-default">Room #{{room.id}} </span>
+						<span type="button" class="disabled btn btn-default">房间 #{{room.id}} </span>
 						<input type="button" v-for="i in [0,1,2]" :value="i" :disabled="room.players.indexOf(i)>-1"
 							 class="btn btn-default">
 					</span>
@@ -28,8 +28,6 @@
 				<hr>
 				<div>兑换比例：1 星云币 = 100 游戏币</div>
 				<hr>
-				<!-- <div class="row">
-  					<div class="col-lg-6"> -->
     					<div class="input-group">
 							<input type="number" 
 								class="form-control" 
@@ -38,12 +36,10 @@
 								onkeyup="this.value=this.value.replace(/\D/g,'');if(this.value >= 9999999999) this.value=9999999999;" 
 								onafterpaste="this.value=this.value.replace(/\D/g,'');if(this.value >= 9999999999) this.value=9999999999;">
       						<span class="input-group-btn">
-        						<button class="btn btn-default" type="button" @click="buycoin">充值</button>
+        						<button class="btn btn-default" type="button" @click="buycoin">充值游戏币</button>
       						</span>
-    					</div><!-- /input-group -->
-  					<!-- </div>/.col-lg-6 -->
-					<hr>
-  					<!-- <div class="col-lg-6"> -->
+    					</div>
+				<hr>
     					<div class="input-group">
       						<input type="number" 
 							  	class="form-control" 
@@ -52,18 +48,30 @@
 								onkeyup="this.value=this.value.replace(/\D/g,'');if(this.value >= 9999999999) this.value=9999999999;" 
 								onafterpaste="this.value=this.value.replace(/\D/g,'');if(this.value >= 9999999999) this.value=9999999999;">
       						<span class="input-group-btn">
-        						<button class="btn btn-default" type="button" @click="sellcoin">兑换</button>
+        						<button class="btn btn-default" type="button" @click="sellcoin">兑换游戏币</button>
       						</span>
-    					</div><!-- /input-group -->
-  					<!-- </div>/.col-lg-6 -->
-				<!-- </div>/.row -->
+    					</div>
+			<div v-if="isadmin">
+				<hr>
+			</div>
+						<div class="input-group" v-show="isadmin">
+      						<input type="number" 
+							  	class="form-control" 
+							  	placeholder="取出游戏币数量" 
+								v-model="outamount"
+								onkeyup="this.value=this.value.replace(/\D/g,'');if(this.value >= 9999999999) this.value=9999999999;" 
+								onafterpaste="this.value=this.value.replace(/\D/g,'');if(this.value >= 9999999999) this.value=9999999999;">
+      						<span class="input-group-btn">
+        						<button class="btn btn-default" type="button" @click="outcoin">取出游戏币</button>
+      						</span>
+    					</div>
 			</div>
 		</div>
 		<div class="join-view" v-else-if="nowIndex==tabsParam[0]">
 			<div class="container">
 				<hr>
 				<button type="button" class="btn btn-default" @click="joingame">
-					加入游戏
+					注册游戏
 				</button>
 			</div>
 		</div>
@@ -82,26 +90,14 @@
 				buyamount:'',
 				sellamount:'',
 				message:"loading...",
+				isadmin:false,
+				outamount:'',
 			}
 		},
-		created() {
+		async created() {
 			this.tabsParam = ['首页','充值','房间'];
 			this.nowIndex = '首页';
-			web3.getMe()
-			.then((me) => {
-				this.$parent.setme(me);
-				this.message = "玩家：" + me.address.slice(-6).toUpperCase() + " 剩余游戏币：" + me.coin;
-				this.$forceUpdate();
-			})
-			.catch((e) => {
-				if (e.message == 'NO_METAMASK'){
-					this.message = "此游戏仅能运行在Chrome或Firefox下，去下载一个？";
-				}else if(e.message == 'METAMASK_LOCKED'){
-					this.message = "没有收到你的钱包地址，安装或解锁一下星云链钱包插件？";
-				}else if(e.message == 'NONE_JOINED'){
-					this.message = "似乎还没加入游戏……去首页加入一下？";
-				}
-			});
+			this.loadme();
 		},
 		methods: {
 			enter: function (e) {
@@ -129,22 +125,48 @@
 				if (!this.tabsParam.includes(this.nowIndex)) this.nowIndex = '首页';
 				this.$forceUpdate();
 			},
+			loadme: function(e){
+				web3.getMe()
+				.then(async (me) => {
+					this.$parent.setme(me);
+					this.message = "玩家：" + me.address.slice(-6).toUpperCase() + " 剩余游戏币：" + me.coin;
+					var isadmin = await web3.playerisadmin(me.address);
+					if(isadmin == "true") this.isadmin = true;
+					else this.isadmin = false;
+					this.$forceUpdate();
+				})
+				.catch((e) => {
+					if (e.message == 'NO_METAMASK'){
+						this.message = "此游戏仅能运行在Chrome或Firefox下，去下载一个？";
+					}else if(e.message == 'METAMASK_LOCKED'){
+						this.message = "没有收到你的钱包地址，安装或解锁一下星云链钱包插件？";
+					}else if(e.message == 'NONE_JOINED'){
+						this.message = "似乎还没注册游戏……去首页注册一下？";
+					}
+				});
+			},
 			joingame: function(e){
-				web3.joingame().then(() => {
+				web3.joingame().then((hash) => {
 					DDZ_DEBUG && console.log(e);
+					this.loadme();
 				}).catch((e) => {
 					this.$parent.notify(e.message, 2000);
 				});
 			},
 			buycoin: function(e){
-				web3.buycoin(this.buyamount).then(() => {
+				web3.buycoin(this.buyamount).then((hash) => {
 					DDZ_DEBUG && console.log(e);
+					this.loadme();
 				});
 			},
 			sellcoin: function(e){
-				web3.sellcoin(this.sellamount).then(() => {
+				web3.sellcoin(this.sellamount).then((hash) => {
 					DDZ_DEBUG && console.log(e);
+					this.loadme();
 				});
+			},
+			outcoin: function(e){
+				web3.withdraw(this.outamount);
 			}
 		}
 	}
