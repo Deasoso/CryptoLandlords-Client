@@ -23,7 +23,7 @@ export default {
 	computed: {
 		displayName: function () {
 			return this.id == DDZ_UNKNOWN ? "空位"
-				: (this.name.length ? this.name.length : this.id + " 号座位" + " 地址: " + this.address.slice(-6).toUpperCase() + " 游戏币:" + this.coin);
+				: (this.name.length ? this.name.length : this.id + " 号座位" + " 玩家: " + this.address.slice(-6).toUpperCase() + " 游戏币:" + this.coin);
 		},
 		parsedCards: function () {
 			return Card.convert(this.cards).sort(Card.cardSort);
@@ -63,10 +63,10 @@ export default {
 			this.address = addr;
 		},
 		setcoin: function (coin){
-			this.coin = coin;
+			this.coin = coin >> 0;
 		},
 		subcoin: function (coin){
-			this.coin = this.coin - coin;
+			this.coin = this.coin - (coin >> 0);
 		},
 		join: function (id, prepared) {
 			this.id = id >> 0;

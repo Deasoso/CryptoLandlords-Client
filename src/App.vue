@@ -5,7 +5,7 @@
 		<prev :stage="stage" ref="prev" v-show="roomId!=-1"></prev>
 		<next :stage="stage" ref="next" v-show="roomId!=-1"></next>
 		<actor :stage="stage" ref="actor" v-show="roomId!=-1"></actor>
-		<center :stage="stage" :roomId="roomId" :roomCoin="roomCoin" :waiting="waiting" :canChangeCoin="canChangeCoin" v-show="roomId!=-1"></center>
+		<center :stage="stage" :roomId="roomId" :roomCoin="roomCoin" :waiting="waiting" :roundid="roundid" :canChangeCoin="canChangeCoin" v-show="roomId!=-1"></center>
 		<div id="notify-message">
 			<div class="alert alert-success" v-show="notifyMessage.length">
 				<strong>{{notifyMessage}}</strong>
@@ -41,7 +41,8 @@
 				rooms: [],
 				ws: null,
 				notifyMessage: "",
-				notifyTimer: null
+				notifyTimer: null,
+				roundid: 0,
 			}
 		},
 		components: {
@@ -142,6 +143,7 @@
 					case "leave":
 						if (m.playerId === actor.id) {
 							this.roomId = DDZ_UNKNOWN;
+							this.roundid = 0;
 							actor.leave();//.id = DDZ_UNKNOWN; 
 						} else {
 							$refs[this.getRefById(m.playerId)].leave();
@@ -171,6 +173,7 @@
 							this.$refs["actor"].setcoin(coin);
 							//仅刷新coin，不用等待回调就可以开下一把
 						});
+						this.roundid = 0;
 						this.refreshPlayers(m.data.players);
 						this.notify((m.data.masterWin ? "地主胜利 !" : "农民胜利 !"), 5000);
 						this.setStage(3);
@@ -180,7 +183,6 @@
 						}
 						break;
 					case "createnewround":
-						
 						var self = this;
 						var round = {};
 						DDZ_DEBUG && console.log(round);
@@ -202,6 +204,7 @@
 									round.player2 == result.player2 &&
 									round.player3 == result.player3 &&
 									round.coin == result.coins){
+									this.roundid = parseInt(result.roundid);
 									self.send({action: "creatednewround",
 									   data:{'roundid':result.roundid}});
 									// web3.newroundevent.stopWatching();

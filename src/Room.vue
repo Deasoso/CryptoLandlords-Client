@@ -126,22 +126,23 @@
 				this.$forceUpdate();
 			},
 			loadme: function(e){
+				var theself = this;
 				web3.getMe()
 				.then(async (me) => {
-					this.$parent.setme(me);
-					this.message = "玩家：" + me.address.slice(-6).toUpperCase() + " 剩余游戏币：" + me.coin;
+					theself.$parent.setme(me);
+					theself.message = "玩家：" + me.address.slice(-6).toUpperCase() + " 剩余游戏币：" + me.coin;
 					var isadmin = await web3.playerisadmin(me.address);
-					if(isadmin == "true") this.isadmin = true;
-					else this.isadmin = false;
-					this.$forceUpdate();
+					if(isadmin == "true") theself.isadmin = true;
+					else theself.isadmin = false;
+					theself.$forceUpdate();
 				})
 				.catch((e) => {
 					if (e.message == 'NO_METAMASK'){
-						this.message = "此游戏仅能运行在Chrome或Firefox下，去下载一个？";
+						theself.message = "此游戏仅能运行在Chrome或Firefox下，去下载一个？";
 					}else if(e.message == 'METAMASK_LOCKED'){
-						this.message = "没有收到你的钱包地址，安装或解锁一下星云链钱包插件？";
+						theself.message = "没有收到你的钱包地址，安装或解锁一下星云链钱包插件？";
 					}else if(e.message == 'NONE_JOINED'){
-						this.message = "似乎还没注册游戏……去首页注册一下？";
+						theself.message = "似乎还没注册游戏……去首页注册一下？";
 					}
 				});
 			},

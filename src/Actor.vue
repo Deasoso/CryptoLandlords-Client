@@ -77,6 +77,7 @@
 			},
 			prepare: function () {
 				if(this.coin < app.roomCoin){
+					console.log(this.coin + "," + app.roomCoin);
 					app.notify('Coin not enough', 10000);
 					return;
 				} 
