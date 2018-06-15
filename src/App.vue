@@ -5,6 +5,7 @@
 		<prev :stage="stage" ref="prev" v-show="roomId!=-1"></prev>
 		<next :stage="stage" ref="next" v-show="roomId!=-1"></next>
 		<actor :stage="stage" ref="actor" v-show="roomId!=-1"></actor>
+		<center :stage="stage" :roomId="roomId" :roomCoin="roomCoin" :waiting="waiting" :canChangeCoin="canChangeCoin" v-show="roomId!=-1"></center>
 		<div id="notify-message">
 			<div class="alert alert-success" v-show="notifyMessage.length">
 				<strong>{{notifyMessage}}</strong>
@@ -21,6 +22,7 @@
 	import Next from './Next.vue'
 	import Actor from './Actor.vue'
 	import Card from './card.js'
+	import Center from './Center.vue'
 	import * as web3 from '@/xingyunsrc/xyapi.js'//'@/web3src/web3.js'
 	import $ from 'webpack-zepto'
 
@@ -29,9 +31,12 @@
 		data: function () {
 			return {
 				stage: 0, /* 0:waiting, 1:calling, 2:playing, 3: over */
+				waiting: 0, /* 0:ready 1:request 2:pay */
 				lastPlayerId: DDZ_UNKNOWN,
 				lastPlayerShot: [],
 				roomId: DDZ_UNKNOWN,
+				roomCoin: 5,
+				canChangeCoin: false,
 				coverCards: [],
 				rooms: [],
 				ws: null,
@@ -40,7 +45,7 @@
 			}
 		},
 		components: {
-			Room, Cover, Prev, Next, Actor
+			Room, Cover, Prev, Next, Actor, Center
 		},
 		methods: {
 			setLastPlayerId: function (playerId) {
@@ -60,6 +65,12 @@
 				for (var id in [0,1,2]) {
 					if (id in players){
 						this.$refs[this.getRefById(id)].join(id, players[id].ready);
+						if(players[id].address){
+							this.$refs[this.getRefById(id)].setaddr(players[id].address);
+						}
+						if(players[id].coin){
+							this.$refs[this.getRefById(id)].setcoin(players[id].coin);
+						}
 					}else{
 						this.$refs[this.getRefById(id)].leave();
 					}
@@ -71,8 +82,12 @@
 			},
 			setme:function (me) {
 				this.$refs["actor"].setaddr(me.address);
+				this.$refs["actor"].setcoin(me.coin) >> 0;
 				this.send({action: "setaddr",
-				   	data:{address: me.address}});
+					data:{
+						address: me.address,
+						coin:me.coin	
+					}});
 			},
 			notify: function (content, time) {
 				clearTimeout(this.notifyTimer);
@@ -81,7 +96,23 @@
 				}, time || 2000);
 				this.notifyMessage = content;
 				$("#notify-message").show();
-			}
+			},
+			setcanChangeCoin: function(can){
+				this.canChangeCoin = can;
+			},
+			changecoin: function(newcoin){
+				for (var child in this.$refs){
+					if(this.$refs[child].hasPrepared){
+						this.notify('Can\'t change.', 10000);
+						return;
+					}
+				}
+				this.send({action: "changecoin",
+					data:{
+						newcoin: newcoin
+                    }
+                });
+			},
 		},
 		created: function () {
 			this.$on("message", async function (m) {
@@ -94,6 +125,7 @@
 					case "join":
 						if (actor.id === DDZ_UNKNOWN) {
 							this.roomId = m.roomId;
+							this.roomCoin = m.data.roomCoin;
 							actor.join(m.playerId);
 							this.refreshPlayers(m.data.players);
 						} else {
@@ -135,16 +167,20 @@
 					case "gameOver":
 						var farmerwin = !m.data.masterWin;
 						DDZ_DEBUG && console.log(m.data.roundid+","+farmerwin+","+m.data.masteraddr)
-						web3.endround(m.data.roundid,m.data.masteraddr,farmerwin).then(() => {
-							this.notify("Landlord " + (m.data.masterWin ? "won !" : "failed !"), 5000);
-							this.setStage(3);
-							actor.hasPrepared = false;
-							for (var id in m.data.cards) {
-								$refs[this.getRefById(id)].cards = m.data.cards[id];
-							}
+						web3.endround(m.data.roundid,m.data.masteraddr,farmerwin).then((coin) => {
+							this.$refs["actor"].setcoin(coin);
+							//仅刷新coin，不用等待回调就可以开下一把
 						});
+						this.refreshPlayers(m.data.players);
+						this.notify("Landlord " + (m.data.masterWin ? "won !" : "failed !"), 5000);
+						this.setStage(3);
+						actor.hasPrepared = false;
+						for (var id in m.data.cards) {
+							$refs[this.getRefById(id)].cards = m.data.cards[id];
+						}
 						break;
 					case "createnewround":
+						
 						var self = this;
 						var round = {};
 						DDZ_DEBUG && console.log(round);
@@ -173,29 +209,35 @@
 						}	
 						// web3.newroundevent.watch(waitround);
 						web3.requestround(m.player1,m.player2,m.player3,m.coin).then((roundhash) => {
-							console.log("reqqquresting");
-							console.log(roundhash);
-							var roundhash = roundhash
+							DDZ_DEBUG && console.log("reqqquresting");
+							DDZ_DEBUG && console.log(roundhash);
+							var roundhash = roundhash;
 							web3.getneb().api.getEventsByHash({hash: roundhash})
 							.then((events) => {
-								console.log(events);
+								DDZ_DEBUG && console.log(events);
 								startround(JSON.parse(events.events[0].data).Newround);
 							})
 							.catch((e) => {
-								console.log(e);
+								DDZ_DEBUG && console.log(e);
 							});
 						});
 						break;
 					case "waitingnewround":
+						this.waiting = 1;
 						for (var child in $refs)
 								$refs[child].reset();
 						break;
 					case "pay":
+						this.waiting = 2;
 						web3.startround(m.roundid).then(() => {
+							this.$refs["actor"].subcoin(this.roomCoin);
 							for (var child in $refs)
 								$refs[child].reset();
 							this.send({action: "payed"});
 						})
+						break;
+					case "changecoin":
+						this.roomCoin = m.data.newcoin;
 						break;
 				}
 				for (var child in $refs)
@@ -223,8 +265,8 @@
 					}
 				};
 				ws.onclose = function (e) {
-					console.log(e);
-					console.log("fxxkingclose");
+					DDZ_DEBUG && console.log(e);
+					DDZ_DEBUG && console.log("fxxkingclose");
 					app.roomId = DDZ_UNKNOWN;
 					app.setStage(0);
 				};
@@ -234,7 +276,6 @@
 				app.ws = ws;
 			} catch (e) {
 			}
-
 		}
 	}
 </script>

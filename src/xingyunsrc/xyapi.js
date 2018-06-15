@@ -54,30 +54,7 @@ export const requestround = async (player1, player2, player3, coin) => {
         callback: NebPay.config.testnetUrl
         //此处可加listener
     });
-    var hash = await new Promise((resolve, reject) => {
-        var intervalQuery;
-        function funcIntervalQuery() {
-            var options = {
-                //var callbackUrl = NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
-                callback: NebPay.config.testnetUrl
-            }
-            nebPay.queryPayInfo(serialNumber, options)   //search transaction result from server (result upload to server by app)
-                .then(function (resp) {
-                    console.log("tx result: " + resp)   //resp is a JSON string
-                    var respObject = JSON.parse(resp)
-                    if (respObject.data.status === 1) {
-                        clearInterval(intervalQuery);
-                        resolve(respObject.data.hash);
-                    }
-                })
-                .catch(function (err) {
-                    console.log(err);
-                });
-        }
-        intervalQuery = setInterval(function () {
-            funcIntervalQuery();
-        }, 10000);
-    });
+    var hash = await waitingcallback(serialNumber);
     return hash;
 };
 
@@ -87,30 +64,8 @@ export const startround = async (roundid) => {
         callback: NebPay.config.testnetUrl
         //此处可加listener
     });
-    var hash = await new Promise((resolve, reject) => {
-        var intervalQuery;
-        function funcIntervalQuery() {
-            var options = {
-                //var callbackUrl = NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
-                callback: NebPay.config.testnetUrl
-            }
-            nebPay.queryPayInfo(serialNumber, options)   //search transaction result from server (result upload to server by app)
-                .then(function (resp) {
-                    console.log("tx result: " + resp)   //resp is a JSON string
-                    var respObject = JSON.parse(resp)
-                    if (respObject.data.status === 1) {
-                        clearInterval(intervalQuery);
-                        resolve(respObject.data.hash);
-                    }
-                })
-                .catch(function (err) {
-                    console.log(err);
-                });
-        }
-        intervalQuery = setInterval(function () {
-            funcIntervalQuery();
-        }, 10000);
-    });
+    var hash = await waitingcallback(serialNumber);
+    return hash;
 };
 
 export const endround = async (roundid, landlordaddr, farmerwin) => {
@@ -119,32 +74,13 @@ export const endround = async (roundid, landlordaddr, farmerwin) => {
         callback: NebPay.config.testnetUrl
         //此处可加listener
     });
-    resolve(serialNumber);
-    //此处无需添加回调，因为玩家如果不想结算回调也触发不了，不如快点开始下一把
-    // var hash = await new Promise((resolve, reject) => {
-    //     var intervalQuery;
-    //     function funcIntervalQuery() {
-    //         var options = {
-    //             //var callbackUrl = NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
-    //             callback: NebPay.config.testnetUrl
-    //         }
-    //         nebPay.queryPayInfo(serialNumber, options)   //search transaction result from server (result upload to server by app)
-    //             .then(function (resp) {
-    //                 console.log("tx result: " + resp)   //resp is a JSON string
-    //                 var respObject = JSON.parse(resp)
-    //                 if (respObject.data.status === 1) {
-    //                     clearInterval(intervalQuery);
-    //                     resolve(respObject.data.hash);
-    //                 }
-    //             })
-    //             .catch(function (err) {
-    //                 console.log(err);
-    //             });
-    //     }
-    //     intervalQuery = setInterval(function () {
-    //         funcIntervalQuery();
-    //     }, 10000);
-    // });
+    //此处无需等待回调，因为玩家如果不想结算回调也触发不了，不如快点开始下一把
+    //返回的是玩家剩余的币，详情见app.vue -> gameover
+    var hash = await waitingcallback(serialNumber);
+    this.getMe()
+	.then((me) => {
+		return me.coin;
+	});
 };
 //========
 export const getMe = async () => {
@@ -158,7 +94,6 @@ export const getMe = async () => {
     var event;
     me.address = await new Promise((resolve, reject) => {
         event = function (e) {
-            // e.detail contains the transferred data (can
             console.log("recived by page:" + e + ", e.data:" + JSON.stringify(e.data));
             if (!!e.data.data.account) {
                 msgsender = e.data.data.account;
@@ -169,16 +104,14 @@ export const getMe = async () => {
         window.addEventListener('message', event);//msgsender;
     });
     msgsender = me.address;
-    //await nebPay.simulateCall(ddzcontract, 0, "getme", JSON.stringify([]));
-    // me.address = Account.NewAccount().getAddressString();
     DDZ_DEBUG && console.log(me.address);
     if (me.address) {
         DDZ_DEBUG && console.log("getting joined..");
-        me.joined = await playerisjoined(msgsender);
+        me.joined = true;//await playerisjoined(msgsender);
         DDZ_DEBUG && console.log(me.joined);
         DDZ_DEBUG && console.log("getting coin..");
-        if (me.joined != "true") throw Error('NONE_JOINED');
-        me.coin = await getCoin(msgsender);
+        //if (me.joined != "true") throw Error('NONE_JOINED');
+        me.coin = 100;//await getCoin(msgsender);
         return me;
     }
     throw Error('WALLET_LOCKED');
@@ -211,6 +144,30 @@ export const playerisadmin = async (address) => {
     }));
     // {return await nebPay.simulateCall(ddzcontract, 0, "isjoined", JSON.stringify([address]));
 };
+const waitingcallback = serialNumber => new Promise((resolve, reject) => {
+    var intervalQuery;
+    function funcIntervalQuery() {
+        var options = {
+            //var callbackUrl = NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
+            callback: NebPay.config.testnetUrl
+        }
+        nebPay.queryPayInfo(serialNumber, options)   //search transaction result from server (result upload to server by app)
+            .then(function (resp) {
+                console.log("tx result: " + resp)   //resp is a JSON string
+                var respObject = JSON.parse(resp)
+                if (respObject.data.status === 1) {
+                    clearInterval(intervalQuery);
+                    resolve(respObject.data.hash);
+                }
+            })
+            .catch(function (err) {
+                console.log(err);
+            });
+    }
+    intervalQuery = setInterval(function () {
+        funcIntervalQuery();
+    }, 10000);
+});
 const seeret = ret => {
     return ret.result.replace(/\"/g, "");
 }

@@ -31,10 +31,12 @@
 				<!-- <div class="row">
   					<div class="col-lg-6"> -->
     					<div class="input-group">
-							<input type="text" class="form-control" 
+							<input type="number" 
+								class="form-control" 
 								placeholder="充值游戏币数量" 
 								v-model="buyamount"
-								onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')">
+								onkeyup="this.value=this.value.replace(/\D/g,'');if(this.value >= 9999999999) this.value=9999999999;" 
+								onafterpaste="this.value=this.value.replace(/\D/g,'');if(this.value >= 9999999999) this.value=9999999999;">
       						<span class="input-group-btn">
         						<button class="btn btn-default" type="button" @click="buycoin">充值</button>
       						</span>
@@ -43,10 +45,12 @@
 					<hr>
   					<!-- <div class="col-lg-6"> -->
     					<div class="input-group">
-      						<input type="text" class="form-control" 
+      						<input type="number" 
+							  	class="form-control" 
 							  	placeholder="兑换游戏币数量" 
 								v-model="sellamount"
-								onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')">
+								onkeyup="this.value=this.value.replace(/\D/g,'');if(this.value >= 9999999999) this.value=9999999999;" 
+								onafterpaste="this.value=this.value.replace(/\D/g,'');if(this.value >= 9999999999) this.value=9999999999;">
       						<span class="input-group-btn">
         						<button class="btn btn-default" type="button" @click="sellcoin">兑换</button>
       						</span>
@@ -77,8 +81,6 @@
 			return {
 				buyamount:'',
 				sellamount:'',
-				address:'',
-				coin:0,
 				message:"loading...",
 			}
 		},
@@ -87,10 +89,8 @@
 			this.nowIndex = '首页';
 			web3.getMe()
 			.then((me) => {
-				this.address = me.address;
-				this.coin = parseInt(me.coin);
 				this.$parent.setme(me);
-				this.message = "玩家：" + this.address.slice(-6).toUpperCase() + " 剩余游戏币：" + this.coin;
+				this.message = "玩家：" + me.address.slice(-6).toUpperCase() + " 剩余游戏币：" + me.coin;
 				this.$forceUpdate();
 			})
 			.catch((e) => {
@@ -99,7 +99,7 @@
 				}else if(e.message == 'METAMASK_LOCKED'){
 					this.message = "没有收到你的钱包地址，安装或解锁一下星云链钱包插件？";
 				}else if(e.message == 'NONE_JOINED'){
-					this.message = "地址：" + this.address + " 似乎还没加入游戏……去首页加入一下？";
+					this.message = "似乎还没加入游戏……去首页加入一下？";
 				}
 			});
 		},

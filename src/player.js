@@ -16,7 +16,6 @@ export default {
 			speaking: false,
 			isMaster: false,
 			hasPrepared: false,
-			isCreator: false,
 			payed: false,
 			callState: 0 /* +/-/0 */
 		}
@@ -24,7 +23,7 @@ export default {
 	computed: {
 		displayName: function () {
 			return this.id == DDZ_UNKNOWN ? "Nobody"
-				: (this.name.length ? this.name.length : "Player #" + this.id);
+				: (this.name.length ? this.name.length : "Player #" + this.id + " Address:" + this.address.slice(-6).toUpperCase() + " Coin:" + this.coin);
 		},
 		parsedCards: function () {
 			return Card.convert(this.cards).sort(Card.cardSort);
@@ -63,6 +62,12 @@ export default {
 		setaddr: function (addr){
 			this.address = addr;
 		},
+		setcoin: function (coin){
+			this.coin = coin;
+		},
+		subcoin: function (coin){
+			this.coin = this.coin - coin;
+		},
 		join: function (id, prepared) {
 			this.id = id >> 0;
 			this.speaking = !prepared;
@@ -78,6 +83,8 @@ export default {
 		},
 		leave: function () {
 			this.join(DDZ_UNKNOWN, false);
+			this.address = "";
+			this.coin = 0;
 		},
 		setMaster: function (message) {
 			if (message.action === "play") {

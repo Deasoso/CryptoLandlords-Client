@@ -55,7 +55,20 @@
 				return app.lastPlayerId != this.id;
 			}
 		},
+		watch: {
+			id: function () {
+				if ((this.id == 0) && (!this.hasPrepared)) this.setcanChangeCoin(true);
+				else this.setcanChangeCoin(false);
+			},
+			hasPrepared: function () {
+				if ((this.id == 0) && (!this.hasPrepared)) this.setcanChangeCoin(true);
+				else this.setcanChangeCoin(false);
+			}
+		},
 		methods: {
+			setcanChangeCoin: function(can){
+				app.setcanChangeCoin(can);
+			},
 			call: function (yes) {
 				app.send({action: "call", data: {confirmed: !!yes}});
 			},
@@ -63,6 +76,10 @@
 				app.send({action: "leave"});
 			},
 			prepare: function () {
+				if(this.coin < app.roomCoin){
+					app.notify('Coin not enough', 10000);
+					return;
+				} 
 				app.setStage(0);
 				app.$refs.actor.reset();
 				app.send({action: "ready"});
@@ -131,7 +148,7 @@
 <style>
 	.actor {
 		position: fixed;
-		bottom: 200px;
+		bottom: 20px;
 		width: 100%;
 	}
 
@@ -140,7 +157,7 @@
 		top: -5px;
 		background: #d9ffde;
 	}
-
+	
 	input.picked:focus,
 	input.picked:hover,
 	input.picked:active {
