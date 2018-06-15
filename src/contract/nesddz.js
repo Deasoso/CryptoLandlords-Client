@@ -90,9 +90,9 @@ DDZ.prototype = {
         var from = Blockchain.transaction.from;
         var round = this.rounds.get(_roundid);
         if(round.roundid != _roundid) throw new Error("No Round.");
-        if(from != round.players[0] ||
-                from != round.players[1] ||
-                from != round.players[2]){
+        if( from != round.players[0] &&
+            from != round.players[1] &&
+            from != round.players[2]) {
             throw new Error("Player Not in Round.");
         }
     },
@@ -157,7 +157,7 @@ DDZ.prototype = {
         var player = this.players.get(_addr);
         if (player) throw new Error("Joined Player.");
         this.players.put(_addr, true);
-        this.gamecoins.put(_addr, new BigNumber(0));
+        this.gamecoins.put(_addr, new BigNumber(100));
         this._event("Joined",{addr: Blockchain.transaction.from});
     },
     buy: function(_coins){
@@ -226,7 +226,7 @@ DDZ.prototype = {
         // round.coins[0] = new BigNumber(round.coins[index]).plus(round.coin);
         // round.coins[1] = new BigNumber(round.coins[index]).plus(round.coin);
         // round.coins[2] = new BigNumber(round.coins[index]).plus(round.coin);
-        // round.coins[index] = new BigNumber(round.coins[index]).plus(round.coin);
+        round.coins[index] = new BigNumber(round.coins[index]).plus(round.coin);
         this.rounds.put(_roundid,round);
         if (new BigNumber(round.coins[0]).gte(round.coin) && 
             new BigNumber(round.coins[1]).gte(round.coin) && 

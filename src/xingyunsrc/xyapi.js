@@ -1,7 +1,7 @@
 "use strict";
 
 import Promise from 'bluebird';
-var ddzcontract = "n1whtDUhe26r8fYuYWLuovKDkLJ81YTLfcu";
+var ddzcontract = "n1qtec4m7Nq567YnNWUoK5S9muXJyyjdiJD";
 
 var nebulas = require("nebulas"),
     Account = nebulas.Account,
