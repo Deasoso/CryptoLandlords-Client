@@ -2,6 +2,7 @@
 
 import Promise from 'bluebird';
 var ddzcontract = "n1qtec4m7Nq567YnNWUoK5S9muXJyyjdiJD";
+var ddzquickcontract = "n1hDMsL127CTu4d4esqaVvHMGCLrmin4WwA";
 
 var nebulas = require("nebulas"),
     Account = nebulas.Account,
@@ -27,7 +28,7 @@ export const getneb = () => {
 
 export const joingame = async () => {
     DDZ_DEBUG && console.log("joining game");
-    nebPay.call(ddzcontract, 0, "join", JSON.stringify([]),{
+    var serialNumber = nebPay.call(ddzcontract, 0, "join", JSON.stringify([]),{
         //callback: NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
         callback: NebPay.config.testnetUrl
         //此处可加listener
@@ -93,6 +94,26 @@ export const endround = async (roundid, landlordaddr, farmerwin) => {
 		return me.coin;
 	});
 };
+
+export const quickstartround = async (roundid,playerid) => {
+    var coin = idtoCoin(roundid);
+    DDZ_DEBUG && console.log("starting round");
+    var serialNumber = nebPay.call(ddzquickcontract, coin, "startround", JSON.stringify([roundid,playerid]),{
+        callback: NebPay.config.testnetUrl
+        //此处可加listener
+    });
+    var hash = await waitingcallback(serialNumber);
+    return hash;
+};
+export const quickendround = async (roundid, landlordaddr, farmerwin) => {
+    DDZ_DEBUG && console.log("ending round");
+    var serialNumber = nebPay.call(ddzquickcontract, 0, "endround", JSON.stringify([roundid, landlordaddr, farmerwin]),{
+        callback: NebPay.config.testnetUrl
+        //此处可加listener
+    });
+    var hash = await waitingcallback(serialNumber);
+    return hash;
+};
 //========
 export const getMe = async () => {
     const me = {};
@@ -115,14 +136,15 @@ export const getMe = async () => {
         window.addEventListener('message', event);//msgsender;
     });
     msgsender = me.address;
+    var state = await neb.api.getAccountState({address:msgsender});
+    me.balance = parseInt(state.balance) / 1000000000000000000;
     DDZ_DEBUG && console.log(me.address);
     if (me.address) {
         DDZ_DEBUG && console.log("getting joined..");
         me.joined = await playerisjoined(msgsender);
         DDZ_DEBUG && console.log(me.joined);
         DDZ_DEBUG && console.log("getting coin..");
-        //if (me.joined != "true") throw Error('NONE_JOINED');
-        me.coin = await getCoin(msgsender);
+        if (me.joined == "true") me.coin = await getCoin(msgsender);
         return me;
     }
     throw Error('WALLET_LOCKED');
@@ -162,6 +184,25 @@ export const withdraw = async (coins) => {
     });
     return;
 };
+export const getbalance = async (address) => {
+    var state = await neb.api.getAccountState({address:address});
+    return parseInt(state.balance) / 1000000000000000000;
+};
+export const idtoCoin = (_roundid) => {
+    if (_roundid < 100) {
+        return 0;
+    } else if (_roundid < 120) {
+        return 0.01;
+    } else if (_roundid < 140) {
+        return 0.1;
+    } else if (_roundid < 160) {
+        return 1;
+    } else if (_roundid < 180) {
+        return 10;
+    } else {
+        return 100;
+    }
+}
 const waitingcallback = serialNumber => new Promise((resolve, reject) => {
     DDZ_DEBUG && console.log("waiting...");
     var intervalQuery;
@@ -183,11 +224,10 @@ const waitingcallback = serialNumber => new Promise((resolve, reject) => {
                 DDZ_DEBUG && console.log(err);
             });
     }
-    intervalQuery = setInterval(function () {
-        funcIntervalQuery();
-    }, 10000);
+    intervalQuery = setInterval(funcIntervalQuery, 10000);
 });
 const seeret = ret => {
     return ret.result.replace(/\"/g, "");
 }
+
     // });

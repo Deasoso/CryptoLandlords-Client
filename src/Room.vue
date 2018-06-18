@@ -15,7 +15,18 @@
 		<div class="room-list" v-if="nowIndex==tabsParam[2]">
 			<div class="container">
 				<a @click="enter" :data-id="room.id" v-for="room in rooms">
-					<span class="btn-group col-xs-6 col-sm-4 col-md-3 top">
+					<span class="btn-group col-xs-6 col-sm-4 col-md-3 top" v-if="room.id<100">
+						<span type="button" class="disabled btn btn-default">房间 #{{room.id}} </span>
+						<input type="button" v-for="i in [0,1,2]" :value="i" :disabled="room.players.indexOf(i)>-1"
+							 class="btn btn-default">
+					</span>
+				</a>
+			</div>
+		</div>
+		<div class="room-list" v-if="nowIndex==tabsParam[3]">
+			<div class="container">
+				<a @click="enter" :data-id="room.id" v-for="room in rooms">
+					<span class="btn-group col-xs-6 col-sm-4 col-md-3 top" v-if="room.id>=100">
 						<span type="button" class="disabled btn btn-default">房间 #{{room.id}} </span>
 						<input type="button" v-for="i in [0,1,2]" :value="i" :disabled="room.players.indexOf(i)>-1"
 							 class="btn btn-default">
@@ -95,7 +106,7 @@
 			}
 		},
 		async created() {
-			this.tabsParam = ['首页','充值','房间'];
+			this.tabsParam = ['首页','充值','房间','星云币试玩场'];
 			this.nowIndex = '首页';
 			this.loadme();
 		},
@@ -130,7 +141,11 @@
 				web3.getMe()
 				.then(async (me) => {
 					theself.$parent.setme(me);
-					theself.message = "玩家：" + me.address.slice(-6).toUpperCase() + " 剩余游戏币：" + me.coin;
+					if(me.joined == 'false'){
+						theself.message = "玩家：" + me.address.slice(-6).toUpperCase() + "，似乎还没注册游戏……去首页注册一下？或者去星云币试玩场？";
+					}else{
+						theself.message = "玩家：" + me.address.slice(-6).toUpperCase() + " 剩余游戏币：" + me.coin;
+					};
 					var isadmin = await web3.playerisadmin(me.address);
 					if(isadmin == "true") theself.isadmin = true;
 					else theself.isadmin = false;
@@ -141,8 +156,6 @@
 						theself.message = "此游戏仅能运行在Chrome或Firefox下，去下载一个？";
 					}else if(e.message == 'METAMASK_LOCKED'){
 						theself.message = "没有收到你的钱包地址，安装或解锁一下星云链钱包插件？";
-					}else if(e.message == 'NONE_JOINED'){
-						theself.message = "似乎还没注册游戏……去首页注册一下？";
 					}
 				});
 			},

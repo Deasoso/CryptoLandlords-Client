@@ -1,12 +1,12 @@
 <div class="player">
 	<div v-if="id == -1">
-		<span>{{displayName}}</span>
+		<span>{{displaymes()}}</span>
 	</div>
 	<div v-else>
-		<span>{{displayName}} <span class="glyphicon glyphicon-user text-danger" title="The Landlord" v-if="isMaster"></span></span>
+		<span>{{displaymes()}} <span class="glyphicon glyphicon-user text-danger" title="The Landlord" v-if="isMaster"></span></span>
 		<div v-if="stage == 0" class="m10">
-			<span class="label label-success" v-if="hasPrepared">Prepared</span>
-			<span class="label label-warning" v-else>Not Ready</span>
+			<span class="label label-success" v-if="hasPrepared">准备</span>
+			<span class="label label-warning" v-else>未准备</span>
 		</div>
 		<div v-else-if="stage == 1">
 			<div v-if="speaking">
@@ -23,10 +23,10 @@
 					</span>
 					<span v-else>
 						<span v-if="cardCount >= 2">
-							<span class="badge">{{cardCount}}</span> cards
+							<span class="badge">{{cardCount}}</span> 剩余手牌
 						</span>
 						<span v-else-if="cardCount == 1">
-							<span class="badge">{{cardCount}}</span> card
+							<span class="badge">{{cardCount}}</span> 剩余手牌
 						</span>
 						<span v-else-if="cardCount == 0">
 							<div class="btn btn-success">Winner!</div>

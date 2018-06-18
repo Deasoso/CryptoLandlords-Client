@@ -13,17 +13,22 @@ export default {
 			lastShot: [],
 			shotCount: 0,
 			coin: 0,
+			balance: 0,
 			speaking: false,
 			isMaster: false,
 			hasPrepared: false,
 			payed: false,
-			callState: 0 /* +/-/0 */
+			callState: 0, /* +/-/0 */
 		}
 	},
 	computed: {
 		displayName: function () {
 			return this.id == DDZ_UNKNOWN ? "空位"
 				: (this.name.length ? this.name.length : this.id + " 号座位" + " 玩家: " + this.address.slice(-6).toUpperCase() + " 游戏币:" + this.coin);
+		},
+		displayquickName: function () {
+			return this.id == DDZ_UNKNOWN ? "空位"
+			: (this.name.length ? this.name.length : this.id + " 号座位" + " 玩家: " + this.address.slice(-6).toUpperCase()) + " 星云币:" + this.balance;
 		},
 		parsedCards: function () {
 			return Card.convert(this.cards).sort(Card.cardSort);
@@ -68,6 +73,9 @@ export default {
 		subcoin: function (coin){
 			this.coin = this.coin - (coin >> 0);
 		},
+		setbalance: function(balance){
+			this.balance = balance;
+		},
 		join: function (id, prepared) {
 			this.id = id >> 0;
 			this.speaking = !prepared;
@@ -85,6 +93,7 @@ export default {
 			this.join(DDZ_UNKNOWN, false);
 			this.address = "";
 			this.coin = 0;
+			this.balance = 0;
 		},
 		setMaster: function (message) {
 			if (message.action === "play") {

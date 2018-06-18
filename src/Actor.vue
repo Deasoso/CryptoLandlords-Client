@@ -1,7 +1,7 @@
 <template>
 	<div class="text-center player actor">
 		<div v-if="stage == 0 || stage == 3" class="m10">
-			<span class="label label-success" v-if="hasPrepared">等待其它玩家</span>
+			<span class="label label-success" v-if="hasPrepared">等待其他玩家</span>
 			<span class="btn-group" v-else>
 				<input type="button" @click="prepare" value="准备！" class="btn btn-primary">
 				<input type="button" @click="leaveroom" value="离开" class="btn btn-warning">
@@ -34,7 +34,7 @@
 						 :value="c.text" :data-key="c.key" :key="c.key" @mouseover="swipePick">
 		</div>
 		<div>
-			<span>{{displayName}}</span>
+			<span>{{displaymes()}}</span>
 			<span class="glyphicon glyphicon-user text-danger" title="The Landlord" v-if="isMaster && stage > 1"></span>
 		</div>
 	</div>
@@ -66,6 +66,10 @@
 			}
 		},
 		methods: {
+			displaymes: function(){
+				if(app.roomId < 100) return this.displayName;
+				else return this.displayquickName;
+			},
 			setcanChangeCoin: function(can){
 				app.setcanChangeCoin(can);
 			},
@@ -76,11 +80,16 @@
 				app.send({action: "leave"});
 			},
 			prepare: function () {
-				if(this.coin < app.roomCoin){
-					console.log(this.coin + "," + app.roomCoin);
-					app.notify('Coin not enough', 10000);
+				DDZ_DEBUG && console.log(this.balance + "," + app.idtoCoin(app.roomId))
+				if(this.roomId < 100){
+					if(this.coin < app.roomCoin){
+						app.notify('Coin not enough', 10000);
+						return;
+					}
+				}else if(this.balance < app.idtoCoin(app.roomId)){
+					app.notify('Neb not enough', 10000);
 					return;
-				} 
+				}
 				app.setStage(0);
 				app.$refs.actor.reset();
 				app.send({action: "ready"});
