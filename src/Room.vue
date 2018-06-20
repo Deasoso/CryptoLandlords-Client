@@ -2,7 +2,7 @@
 	<div class="content">
 			<ul id="myTab" class="nav nav-tabs container">
 				<p class="navbar-text pull-right">{{message}}</p>
-				<li class="disabled"><a href="#">星云斗地主</a></li>
+				<li class="disabled"><a href="#">星云斗地主1.0</a></li>
     			<li 
         			v-for="(item,index) in tabsParam" 
         			:class="{active:item == nowIndex}"
@@ -84,6 +84,47 @@
 				<button type="button" class="btn btn-default" @click="joingame">
 					注册游戏
 				</button>
+				<hr>
+<div>这是一款去中心化的棋牌对战游戏。</div>
+<div>拥有独特的共识机制来结算游戏结果，让游戏在没有第三方情况下能稳步进行。</div>
+<hr>
+<div>游戏步骤：</div>
+<div>用游戏币游戏：</div>
+<div>①：注册游戏：点击首页的注册游戏，发起交易即可，新用户立送100游戏币。</div>
+<div>②：充值游戏币（可选）：点击充值页面，会以1星云币=100游戏币的比例进行充值。</div>
+<div>③：加入房间:在房间页面加入房间。</div>
+<div>④：修改房间底分（可选）：修改房间的底分。</div>
+<div>⑤：准备游戏。</div>
+<div>⑥：在所有玩家准备完毕后，等待0号玩家向合约发起对局请求。</div>
+<div>⑦：对局请求发送完毕后，每个玩家向本局游戏押上游戏币。</div>
+<div>⑧：Have Fun！</div>
+<div>⑨：游戏结束后，向合约发起游戏结束请求，在所有玩家确认后，将会结算游戏币。</div>
+<div>⑩：退出房间，或者继续下一局游戏。</div>
+<hr>
+<div>用星云币游戏：</div>
+<div>①：加入房间：在星云币试玩场加入房间并准备。</div>
+<div>②：准备游戏。</div>
+<div>③：在所有玩家准备后，各自向合约发起对局请求。</div>
+<div>④：Have Fun！</div>
+<div>⑤：游戏结束后，向合约发起游戏结束请求，在所有玩家确认后，将会结算游戏币。</div>
+<div>⑥：退出房间，或者继续下一局游戏。</div>
+<hr>
+<div>游戏说明：</div>
+<div>游戏没有掉线重连机制，如果对局中出现意外情况，请邮箱futurelightcone@gamil.com，并说明情况，管理员会解决。</div>
+<div>炸弹和春天等不会翻倍。地主胜利即赢底分，农民胜利即赢一半底分。</div>
+<div>星云币试玩场说明：</div>
+<div>底分：</div>
+<div>100-119房间：0.01星云币。</div>
+<div>120-139房间：0.1星云币。</div>
+<div>140-159房间：1星云币。</div>
+<div>160-179房间：10星云币。</div>
+<div>180-199房间：100星云币。</div>
+<div>每局结束后收取1%手续费。</div>
+<div>仅提供少量星云币的试玩，切勿沉迷赌博。</div>
+<div>游戏需要共识机制，所以希望大家遵守游戏规则，公平竞技。</div>
+<hr>
+<div>Copyright 2018 Deaso.</div>
+<div>All rights reserved.</div>
 			</div>
 		</div>
 	</div>
@@ -119,13 +160,29 @@
 				.then((me) => {
 					var el = $(e.target);
 					if (!el.is("input")) return;
-					this.$parent.send({
-						action: "join",
-						data: {
-							roomId: roomid >> 0,
-							playerId: el.val() >> 0
-						}
-					});
+					if (roomid > 100){
+						web3.roundstarted(roomid).then((yes)=>{
+							if (yes == "false"){
+								this.$parent.send({
+								action: "join",
+								data: {
+									roomId: roomid >> 0,
+									playerId: el.val() >> 0
+								}
+								});
+							}else{
+								this.$parent.notify("round started.",10000)
+							}
+						})
+					}else{
+						this.$parent.send({
+							action: "join",
+							data: {
+								roomId: roomid >> 0,
+								playerId: el.val() >> 0
+							}
+						});
+					}
 				}).catch((e) => {
 					this.$parent.notify(e.message, 2000);
 				});

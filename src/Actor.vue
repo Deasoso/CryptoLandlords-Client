@@ -122,7 +122,9 @@
 				app.send({action: "shoot", data: {cards: []}});
 			},
 			swipePick: function (e) {
+				DDZ_DEBUG && console.log("diddd")
 				if (swipePicking) {
+					DDZ_DEBUG && console.log("diding")
 					$(e.target).toggleClass("picked");
 				}
 			}
@@ -133,9 +135,12 @@
 			actor = this;
 
 			$(document).mouseup(function(){
+				DDZ_DEBUG && console.log("up");
 				swipePicking = false;
 			});
-			$(".actor-cards").mousedown(function(e){
+			$(document).mousedown(function(e){
+				DDZ_DEBUG && console.log("down");
+				DDZ_DEBUG && console.log(e);
 				swipePicking = true;
 				if ($(e.target).is(".actor-card")) {
 					$(e.target).toggleClass("picked");
@@ -145,6 +150,7 @@
 			});
 
 			$(document).on("contextmenu", function(e){
+				DDZ_DEBUG && console.log("context")
 				if(app.stage == 2 && actor.speaking) {
 					actor.shoot();
 				}

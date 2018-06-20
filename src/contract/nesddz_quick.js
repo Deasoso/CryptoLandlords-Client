@@ -106,11 +106,18 @@ DDZ_quick.prototype = {
             round = new Round();
             round.roundid = _roundid;
             round.coin = _coins;
-            round.players[_index] = from;
+        }else if(round.started){
+            throw new Error("Round Started");
         }
+        round.players[_index] = from;
         if(!(round.players[0] != round.players[1] && round.players[1] != round.players[2] && round.players[0] != round.players[2])) throw new Error("Same Player");
         round.coins[_index] = new BigNumber(round.coins[_index]).plus(round.coin);
         Blockchain.transfer(from,value.sub(round.coin));
+        if (new BigNumber(round.coins[0]).gte(round.coin) && 
+            new BigNumber(round.coins[1]).gte(round.coin) && 
+            new BigNumber(round.coins[2]).gte(round.coin)){
+            round.started = true;
+        }
         this.rounds.put(_roundid,round);
         if (new BigNumber(round.coins[0]).gte(round.coin) && 
             new BigNumber(round.coins[1]).gte(round.coin) && 
@@ -121,6 +128,8 @@ DDZ_quick.prototype = {
     endround: function(_roundid, _landlord, _isfarmerwin){
         this.m_onlyRoundPlayer(_roundid);
         var round = this.rounds.get(_roundid);
+        if(!round) throw new Error("No Round");
+        if(!round.started) throw new Error("Round Not Started");
         var index = new BigNumber(0);
         var from = Blockchain.transaction.from;
         if (from == round.players[0]){
@@ -139,6 +148,7 @@ DDZ_quick.prototype = {
         round.landlord[index] = _landlord;
         round.isfarmerwin[index] = _isfarmerwin;
         round.checked[index] = true;
+        this.rounds.put(_roundid,round);
         if (round.checked[0] && round.checked[1] && round.checked[2]){
             if(round.landlord[0] == round.landlord[1] && round.landlord[1] == round.landlord[2]){
                 if(round.isfarmerwin[0] == round.isfarmerwin[1] && round.isfarmerwin[1] == round.isfarmerwin[2]){
@@ -170,7 +180,7 @@ DDZ_quick.prototype = {
         var round = this.rounds.get(_roundid);
         if (!(  new BigNumber(round.coins[0]).gte(round.coin) && 
                 new BigNumber(round.coins[1]).gte(round.coin) && 
-                new BigNumber(round.coins[2]).gte(round.coin))) throw new Error("Error Coins" + round.coins[0] + round.coins[0] + round.coins[1]);
+                new BigNumber(round.coins[2]).gte(round.coin))) throw new Error("Error Coins" + round.coins[0] + round.coins[1] + round.coins[2]);
         var landlordindex = 0;
         var farmer1index = 0;
         var farmer2index = 0;
@@ -191,23 +201,23 @@ DDZ_quick.prototype = {
         }
         if(_isfarmerwin){
             //landlord lose
-            Blockchain.transfer(round.players[farmer1index],calculatePrice(new BigNumber(round.coin).div(2)));
-            Blockchain.transfer(round.players[farmer2index],calculatePrice(new BigNumber(round.coin).div(2)));
+            Blockchain.transfer(round.players[farmer1index],this.calculatePrice(new BigNumber(round.coin).div(2)));
+            Blockchain.transfer(round.players[farmer2index],this.calculatePrice(new BigNumber(round.coin).div(2)));
             //farmer get ori
-            Blockchain.transfer(round.players[farmer1index],calculatePrice(new BigNumber(round.coin).div(2)));
-            Blockchain.transfer(round.players[farmer2index],calculatePrice(new BigNumber(round.coin).div(2)));
+            Blockchain.transfer(round.players[farmer1index],this.calculatePrice(new BigNumber(round.coin).div(2)));
+            Blockchain.transfer(round.players[farmer2index],this.calculatePrice(new BigNumber(round.coin).div(2)));
         }else{
             //farmer lose
-            Blockchain.transfer(round.players[landlordindex],calculatePrice(new BigNumber(round.coin).div(2)));
-            Blockchain.transfer(round.players[landlordindex],calculatePrice(new BigNumber(round.coin).div(2)));
+            Blockchain.transfer(round.players[landlordindex],this.calculatePrice(new BigNumber(round.coin).div(2)));
+            Blockchain.transfer(round.players[landlordindex],this.calculatePrice(new BigNumber(round.coin).div(2)));
             //farmer get 1/2 ori ,landlord get ori
-            Blockchain.transfer(round.players[farmer1index],calculatePrice(new BigNumber(round.coin).div(2)));
-            Blockchain.transfer(round.players[farmer2index],calculatePrice(new BigNumber(round.coin).div(2)));
-            Blockchain.transfer(round.players[landlordindex],calculatePrice(new BigNumber(round.coin)));
+            Blockchain.transfer(round.players[farmer1index],this.calculatePrice(new BigNumber(round.coin).div(2)));
+            Blockchain.transfer(round.players[farmer2index],this.calculatePrice(new BigNumber(round.coin).div(2)));
+            Blockchain.transfer(round.players[landlordindex],this.calculatePrice(new BigNumber(round.coin)));
         }
-        newround = new Round();
+        var newround = new Round();
         newround.roundid = _roundid;
-        newround.coin = this.idtoCoin(this._roundid);
+        newround.coin = this.idtoCoin(_roundid);
         this.rounds.put(_roundid,newround);
     },
     _cancelround: function(_roundid){
@@ -218,7 +228,7 @@ DDZ_quick.prototype = {
         for(var i=0;i<3;i++){
             Blockchain.transfer(round.players[i],new BigNumber(round.coin))
         }
-        newround = new Round();
+        var newround = new Round();
         newround.roundid = _roundid;
         newround.coin = this.idtoCoin(this._roundid);
         this.rounds.put(_roundid,newround);
@@ -254,6 +264,7 @@ DDZ_quick.prototype = {
         return _price.div(100).times(99);
     },
     idtoCoin: function(_roundid){
+        var _roundid = new BigNumber(_roundid);
         if (_roundid.lt(100)) {
             throw new Error("No Round.");
           } else if (_roundid.lt(120)) {
@@ -271,6 +282,11 @@ DDZ_quick.prototype = {
     isadmin: function(_addr){
         return this.admins.get(_addr);
     },
+    roundstarted: function(_roundid){
+        var round = this.rounds.get(_roundid);
+        if(!round) return false;
+        return round.started;
+    }
 }
 
 module.exports = DDZ_quick;

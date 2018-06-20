@@ -160,7 +160,7 @@
 							this.waiting = 0;
 							actor.leave();//.id = DDZ_UNKNOWN; 
 						} else {
-							if(this.stage >= 1) this.notify(m.playerId + "号玩家逃跑了，本局id：" + this.roundid + "，请邮箱管理员结算。");
+							if(this.stage >= 1 && this.stage <= 2) this.notify(m.playerId + "号玩家逃跑了，本局id：" + this.roundid + "，请邮箱管理员结算。");
 							this.stage = 0;
 							this.waiting = 0;
 							$refs[this.getRefById(m.playerId)].leave();
