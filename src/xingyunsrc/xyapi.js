@@ -3,8 +3,10 @@
 import Promise from 'bluebird';
 // var ddzcontract = "n1qtec4m7Nq567YnNWUoK5S9muXJyyjdiJD"; //test
 // var ddzquickcontract = "n1sjbBU4m5h82VavvENosYHEJQgoNDLFNNb"; //test
-var ddzcontract = "n1kWUU4U5uYrCWLXxCQDRKJw8gEqKS7o7Js"; //main
+var ddzcontract = "n1fnVkqd8UrExbRmkUcz3kfms3DJ1RANzUV"; //main
+//hash:ca0cc987651def681dc695b4d59d498a5f9a9a17d22edf1b6dcade8f36ff5bf3
 var ddzquickcontract = "n1xrYBupdyXQykLwCdK8uVFwRXGySgdAzyV" //main
+//hash:c88076f5e08157e15191f6204ee0cad6a3f1d9b9f7b5697d92068be961ec3de7
 
 var nebulas = require("nebulas"),
     Account = nebulas.Account,
