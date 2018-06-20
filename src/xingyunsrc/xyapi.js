@@ -1,8 +1,10 @@
 "use strict";
 
 import Promise from 'bluebird';
-var ddzcontract = "n1qtec4m7Nq567YnNWUoK5S9muXJyyjdiJD";
-var ddzquickcontract = "n1sjbBU4m5h82VavvENosYHEJQgoNDLFNNb";
+// var ddzcontract = "n1qtec4m7Nq567YnNWUoK5S9muXJyyjdiJD"; //test
+// var ddzquickcontract = "n1sjbBU4m5h82VavvENosYHEJQgoNDLFNNb"; //test
+var ddzcontract = "n1kWUU4U5uYrCWLXxCQDRKJw8gEqKS7o7Js"; //main
+var ddzquickcontract = "n1xrYBupdyXQykLwCdK8uVFwRXGySgdAzyV" //main
 
 var nebulas = require("nebulas"),
     Account = nebulas.Account,
@@ -13,10 +15,10 @@ var msgsender;
 var NebPay = require("nebpay.js");     //https://github.com/nebulasio/nebPay
 var nebPay = new NebPay();
 
-var callbacks = NebPay.config.testnetUrl;
-
-neb.setRequest(new nebulas.HttpRequest("https://testnet.nebulas.io"));
-// neb.setRequest(new nebulas.HttpRequest("https://mainnet.nebulas.io"));
+// var callbacks = NebPay.config.testnetUrl;
+var callbacks = NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
+// neb.setRequest(new nebulas.HttpRequest("https://testnet.nebulas.io")); //test
+neb.setRequest(new nebulas.HttpRequest("https://mainnet.nebulas.io")); //main
 
 export const getneb = () => {
     return neb;
@@ -25,9 +27,7 @@ export const getneb = () => {
 export const joingame = async () => {
     DDZ_DEBUG && console.log("joining game");
     var serialNumber = nebPay.call(ddzcontract, 0, "join", JSON.stringify([]),{
-        //callback: NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
         callback: callbacks
-        //此处可加listener
     });
     var hash = await waitingcallback(serialNumber);
     return hash;
@@ -36,9 +36,7 @@ export const buycoin = async (coin) => {
     var rate = await getrate();
     DDZ_DEBUG && console.log("buying coin " + coin + " " + rate);
     var serialNumber = nebPay.call(ddzcontract, coin * rate, "buy", JSON.stringify([coin]), {
-        //callback: NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
         callback: callbacks
-        //此处可加listener
     });
     var hash = await waitingcallback(serialNumber);
     return hash;
@@ -48,7 +46,6 @@ export const sellcoin = async (coin) => {
     DDZ_DEBUG && console.log("selling coin " + coin + " " + rate);
     var serialNumber = nebPay.call(ddzcontract, "0", "sell", JSON.stringify([coin]), {            //callback: NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
         callback: callbacks
-        //此处可加listener
     });
     var hash = await waitingcallback(serialNumber);
     return hash;
@@ -58,9 +55,7 @@ export const sellcoin = async (coin) => {
 export const requestround = async (player1, player2, player3, coin) => {
     DDZ_DEBUG && console.log("requesting round" + ":" + player1 + ":" + player2 + ":" + player3);
     var serialNumber = nebPay.call(ddzcontract, 0, "addround", JSON.stringify([player1, player2, player3, coin]), {
-        //callback: NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
         callback: callbacks
-        //此处可加listener
     });
     var hash = await waitingcallback(serialNumber);
     return hash;
@@ -70,7 +65,6 @@ export const startround = async (roundid) => {
     DDZ_DEBUG && console.log("starting round");
     var serialNumber = nebPay.call(ddzcontract, 0, "startround", JSON.stringify([roundid]),{
         callback: callbacks
-        //此处可加listener
     });
     var hash = await waitingcallback(serialNumber);
     return hash;
@@ -80,7 +74,6 @@ export const endround = async (roundid, landlordaddr, farmerwin) => {
     DDZ_DEBUG && console.log("ending round");
     var serialNumber = nebPay.call(ddzcontract, 0, "endround", JSON.stringify([roundid, landlordaddr, farmerwin]),{
         callback: callbacks
-        //此处可加listener
     });
     //此处无需等待回调，因为玩家如果不想结算回调也触发不了，不如快点开始下一把
     //返回的是玩家剩余的币，详情见app.vue -> gameover
@@ -96,7 +89,6 @@ export const quickstartround = async (roundid,playerid) => {
     DDZ_DEBUG && console.log("starting round");
     var serialNumber = nebPay.call(ddzquickcontract, coin, "startround", JSON.stringify([roundid,playerid]),{
         callback: callbacks
-        //此处可加listener
     });
     var hash = await waitingcallback(serialNumber);
     return hash;
@@ -211,7 +203,6 @@ const waitingcallback = serialNumber => new Promise((resolve, reject) => {
     var intervalQuery;
     function funcIntervalQuery() {
         var options = {
-            //var callbackUrl = NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
             callback: callbacks
         }
         nebPay.queryPayInfo(serialNumber, options)   //search transaction result from server (result upload to server by app)
@@ -229,7 +220,7 @@ const waitingcallback = serialNumber => new Promise((resolve, reject) => {
     }
     intervalQuery = setInterval(funcIntervalQuery, 10000);
 });
-const seeret = ret => {
+const seeret = ret => { // replace ""
     return ret.result.replace(/\"/g, "");
 }
 
